@@ -1,0 +1,268 @@
+:root {
+    --bg1: #c7d7f2;
+    --bg2: #dea7eb;
+    --button-color: #3b112f;
+    --trans1: #ffffff66;
+    --text: #120700;
+    --text2: #ffffff;
+    --main-font: 'Lato';
+}
+
+html {
+    background-attachment: fixed;
+    background-image: linear-gradient(0deg, var(--bg1), var(--bg2));
+}
+
+#footer-wrapper {
+    max-height: 55px;
+    min-height: 55px;
+}
+
+#footer-bar {
+    margin-top: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-family: 'Roboto Slab', serif;
+    font-style: italic;
+    text-align: center;
+    color: var(--text);
+    font-size: 300%;
+    letter-spacing: 6px;
+    margin: 0;
+    padding: 20px 0;
+}
+
+p {
+    color: var(--text);
+}
+
+button {
+    color: white;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    text-decoration-color: transparent;
+}
+
+.footer-link {
+    color: white;
+    background-color: var(--button-color);
+    border: white 2px;
+    padding: 12px 6px;
+    text-align: center;
+    font-size: 16px;
+    margin: 2px 1px;
+    cursor: pointer;
+    width: 115px;
+    transition: 0.3s;
+}
+
+h3 {
+    text-align: left;
+    color: var(--text);
+    margin: 25px 5px;
+    padding-left: 8%;
+    font-family: var(--main-font), sans-serif;
+    letter-spacing: 3px;
+    font-size: 1.5em;
+}
+
+/* Dropdown button links in sidebar */
+.drop {
+    position: relative;
+    justify-content: center;
+    background-color: var(--text);
+    text-align: center;
+    margin: 15px 0;
+}
+
+.drop-button {
+    background-color: var(--text);
+    color: white;
+    padding: 10px 30px;
+    font-size: 16px;
+    border: none;
+}
+
+.drop-content {
+    display: none;
+    position: absolute;
+    width: 100%;
+    z-index: 1;
+}
+
+.drop-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Focus, Hover, Selection, etc */
+
+.footer-link:hover {background-color: var(--bg2);}
+
+button:focus {transition: 0s; border: 3px solid white;}
+
+.drop:hover {background-color: #aa5555;}
+
+.drop a:focus {outline: thin dotted;}
+
+.drop:hover .drop-content {display: block; background-color: #eeeeee;}
+
+.drop:hover .drop-button {background-color: #aa5555;}
+
+#sidebar-text::selection {
+    color: white;
+    background-color: #117ff4;
+}
+
+#sidebar-text::-moz-selection {
+    color: white;
+    background-color: #117ff4;
+}
+
+h1::selection {
+    color: black;
+    background-color: red;
+}
+
+h1::-moz-selection {
+    color: black;
+    background-color: red;
+}
+
+#sidebar-text a {
+    text-decoration: none;
+}
+
+#content-body {
+    background-color: var(--trans1);
+    grid-column: 2 / span 1;
+    text-align: center;
+    width: 100%;
+    min-width: 300px;
+    max-width: 1320px;
+    max-height: 900px;
+    overflow-y: auto;
+}
+
+#content-body p {
+    font-family: sans-serif;
+    text-indent: 30px;
+    margin: 0 auto;
+    margin-top: 18px;
+    text-align: left;
+    line-height: 1.4em;
+    width: 90%;
+}
+
+#content-body p:first-child {
+    margin-top: 50px;
+}
+
+#content-body img {
+    color: white;
+    width: 87%;
+    max-width: 1000px;
+    border: white dashed 3px;
+    margin-bottom: 20px;
+}
+
+#header {
+    background-color: var(--trans1);
+    grid-column: 1 / span 2;
+    z-index: 20;
+    top: 0;
+}
+
+#sidebar {
+    background-color: var(--trans1);
+    grid-column: 1 / span 1;
+    grid-row: 2 / span 1;
+    overflow-y: auto;
+    height: 900px;
+    min-width: 260px;
+}
+
+#sidebar-text {
+    padding-top: 1em;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    width: 80%;
+    line-height: 150%;
+    font-family: 'Cambria', 'Georgia', 'Times', 'serif';
+    font-size: 1em;
+}
+
+#main-grid {
+    display: grid;
+    grid-template-columns: min-content auto;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-top: 15px;
+    gap: 10px;
+}
+
+#main-grid > * {
+    border-radius: 10px;
+}
+
+@media screen and (max-width: 1020px) {
+    #header {
+        background-color: var(--trans1);
+        position: sticky;
+    }
+    #sidebar {
+        -webkit-overflow-scrolling: touch;
+    }
+    #content-body {
+        -webkit-overflow-scrolling: touch;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
+    @media screen and (max-width: 750px) {
+        #main-grid {
+            width: 100%;
+            min-width: 300px;
+            grid-template-columns: auto;
+            margin: 0 auto;
+            margin-top: 5px;
+            gap: 0;
+        }
+
+        #main-grid > * {
+            margin: 0 auto;
+        }
+
+        h1 {
+            padding: 5px 0;
+        }
+
+        #header {
+            width: 100%;
+            max-height: 60px;
+            background-color: var(--trans1);
+            grid-column: 1 / span 1;
+            grid-row: 1 / span 1;
+        }
+
+        #content-body {
+            background-color: transparent;
+            width: 100%;
+            grid-column: 1 / span 1;
+            grid-row: 2 / span 1;
+            min-height: 80px;
+            max-height: max-content;
+        }
+        
+        #sidebar {
+            width: 100%;
+            height: max-content;
+            background-color: transparent;
+            grid-column: 1 / span 1;
+            grid-row: 3 / span 1;
+        }
+    }
+}
