@@ -211,7 +211,6 @@ h1::-moz-selection {
 @media screen and (max-width: 1020px) {
     #header {
         background-color: var(--trans1);
-        position: sticky;
     }
     #sidebar {
         -webkit-overflow-scrolling: touch;
@@ -241,6 +240,7 @@ h1::-moz-selection {
         }
 
         #header {
+            position: sticky;
             width: 100%;
             max-height: 60px;
             background-color: var(--trans1);
