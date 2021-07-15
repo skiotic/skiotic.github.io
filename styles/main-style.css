@@ -211,6 +211,7 @@ h1::-moz-selection {
 @media screen and (max-width: 1020px) {
     #header {
         background-color: var(--trans1);
+        position: relative;
     }
     #sidebar {
         -webkit-overflow-scrolling: touch;
