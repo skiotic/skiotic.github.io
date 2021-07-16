@@ -241,6 +241,8 @@ h1::-moz-selection {
         }
 
         #header {
+            -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
             position: sticky;
             width: 100%;
             max-height: 60px;
