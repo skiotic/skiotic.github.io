@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Skiotic | Images to XPM format</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Welcome to a little something.">
+    <meta name="keywords" content="skiotic">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="stylesheet" type="text/css" href="../styles/main-style.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto+Slab&display=swap">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@1,400;1,700&display=swap">
+    <script type="text/javascript">
+        window.addEventListener("load", function() {
+            var imgCount = 0;
+            document.querySelector("#upload").value = null;
+            document.querySelector("#output").innerHTML = "";
+
+            function imageDataToXMPString(image) {
+                let asciiSet = " .+@#$%&*=-;>,\')!~{]^\/(_:<[}|1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+                let tempRGBSet = [];
+                let colorField = [];
+                let colorSet = [];
+                let hexAsciiMap = new Map(); // Map<colorHex, ascii>
+
+                const canvas = document.createElement("canvas");
+                canvas.width = image.naturalWidth;
+                canvas.height = image.naturalHeight;
+                const ctx = canvas.getContext("2d");
+                ctx.imageSmoothingEnabled = false;
+
+                ctx.drawImage(image, 0, 0);
+                
+                let imageData = ctx.getImageData(0, 0, image.naturalWidth, image.naturalHeight);
+
+                // Reduction to no transparency.
+                for (let i = 0; i < imageData.data.length; i += 4) {
+                    let alpha = imageData.data[i + 3] / 255;
+                    tempRGBSet.push(imageData.data[i + 0] * alpha);
+                    tempRGBSet.push(imageData.data[i + 1] * alpha);
+                    tempRGBSet.push(imageData.data[i + 2] * alpha);
+                }
+                for (let i = 0; i < tempRGBSet.length; i += 3) {
+                    colorField.push(RGBToHex(tempRGBSet[i + 0], tempRGBSet[i + 1], tempRGBSet[i + 2]));
+                }
+                // To filter for first occurance of a color.
+                for (let i = 0; i < tempRGBSet.length; i += 3) {
+                    let colorHex = RGBToHex(tempRGBSet[i + 0], tempRGBSet[i + 1], tempRGBSet[i + 2]);
+                    let amountOfHex = colorSet.filter(value => value == colorHex);
+                    if (amountOfHex.length == 0) colorSet.push(colorHex);
+                }
+                
+                let XMPString = `
+                /* XPM */\nstatic char * image_${imgCount++}[] = {\n"${image.naturalWidth} ${image.naturalHeight} ${colorSet.length} 1",\n`
+
+                for (let i = 0; i < colorSet.length; i++) {
+                    hexAsciiMap.set(colorSet[i], asciiSet[i]);
+                    XMPString += `\"${asciiSet[i]} c ${colorSet[i]}\",\n`;
+                }
+
+                for (let i = 0; i < (image.naturalWidth * image.naturalHeight); i++) {
+                    let modWidth = i % image.naturalWidth;
+                    XMPString += `${(modWidth == 0 || i == 0) ? "\"" : ""}${hexAsciiMap.get(colorField[i])}${modWidth != (image.naturalWidth - 1) || i == 0 ? "" : i != (image.naturalWidth * image.naturalHeight) - 1 ? "\",\n" : "\""}`;
+                }
+
+                return (XMPString + "}").trim();
+            }
+
+            function RGBToHex(red, green, blue) {
+                red = red.toString(16);
+                green = green.toString(16);
+                blue = blue.toString(16);
+                return "#" + new String(
+                    (red.length === 1 ? `0${red}` : Number("0x" + red) > 255 ? "ff" : red) +
+                    (green.length === 1 ? `0${green}` : Number("0x" + green) > 255 ? "ff" : green) +
+                    (blue.length === 1 ? `0${blue}` : Number("0x" + blue) > 255 ? "ff" : blue)
+                );
+            }
+
+            function putInTextarea(value) {
+                document.querySelector("#output").innerHTML = value;
+            }
+
+            function upload() {
+                putInTextarea("");
+                let input = document.querySelector("#upload");
+                let file = input.files[0];
+                let reader = new FileReader();
+                reader.addEventListener("load", _ => {
+                    let image = new Image();
+                    image.src = reader.result;
+                    image.onload = function() {putInTextarea(imageDataToXMPString(image))};
+                    input.value = null;
+                });
+                reader.readAsDataURL(file);
+            }
+
+            document.querySelector("#upload").addEventListener("change", upload);
+        });
+    </script>
+  </head>
+  <body>
+    <main id="main-grid">
+      <header id="header">
+        <h1 title="Skiotic">SKIOTIC</h1>
+      </header>
+      <article id="content-body">
+        <p style="text-decoration: underline;">WARNING: The current version is limited to a color palette of only 91 colors!</p>
+        <textarea id="output"></textarea><br>
+        <label>Load Image: </label><input id="upload" type="file">
+      </article>
+      <aside id="sidebar">
+        <h3>PAGES--</h3>
+        <p id="sidebar-text">
+            <a href="#">Images to XPM format</a>
+        </p>
+      </aside>
+    </main>
+    <div id="footer-wrapper">
+      <footer id="footer-bar"><!-- Buttons currently unfunctional. -->
+        <button type="button" class="footer-link" title="Home">Home</button>
+        <button type="button" class="footer-link" title="About">About</button>
+      </footer>
+    </div>
+  </body>
+</html>
