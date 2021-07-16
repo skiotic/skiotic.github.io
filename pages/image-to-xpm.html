@@ -15,7 +15,6 @@
         window.addEventListener("load", function() {
             var imgCount = 0;
             document.querySelector("#upload").value = null;
-            document.querySelector("#output").innerHTML = "";
 
             function imageDataToXMPString(image) {
                 let asciiSet = " .+@#$%&*=-;>,\')!~{]^\/(_:<[}|1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -78,19 +77,26 @@
                 );
             }
 
-            function putInTextarea(value) {
-                document.querySelector("#output").innerHTML = value;
+            function stringToXPMFile(string) {
+              let file = new File([new Blob([string])], "image", {type: "image/x-xpixmap"});
+              let a = document.createElement("a");
+              let objURL = (URL || webkitURL).createObjectURL(file);
+              a.href =  objURL;
+              a.style.display = "none";
+              a.download = "image.xpm";
+              a.click();
+              (URL || webkitURL).revokeObjectURL(objURL);
+              a.remove();
             }
 
             function upload() {
-                putInTextarea("");
                 let input = document.querySelector("#upload");
                 let file = input.files[0];
                 let reader = new FileReader();
                 reader.addEventListener("load", _ => {
                     let image = new Image();
                     image.src = reader.result;
-                    image.onload = function() {putInTextarea(imageDataToXMPString(image))};
+                    image.onload = function() {stringToXPMFile(imageDataToXMPString(image))};
                     input.value = null;
                 });
                 reader.readAsDataURL(file);
@@ -106,8 +112,7 @@
         <h1 title="Skiotic">SKIOTIC</h1>
       </header>
       <article id="content-body">
-        <p style="text-decoration: underline;">WARNING: The current version is limited to a color palette of only 91 colors!</p>
-        <textarea id="output"></textarea><br>
+        <p style="text-decoration: underline;text-align: center;margin-bottom: 20px;">WARNING: The current version is limited to a color palette of only 91 colors!<br>Currently only converts alpha channel into RGB scalar (No "None").</p>
         <label>Load Image: </label><input id="upload" type="file">
       </article>
       <aside id="sidebar">
