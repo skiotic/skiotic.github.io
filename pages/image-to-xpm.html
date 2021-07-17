@@ -71,10 +71,6 @@
             XMPString += `\"${getAsciiPerPixel(i)} c ${colorPalette[i]}\",\n`;
           }
 
-          if (pixelHexArray.filter(value => value == "None").length > 0) {
-            XMPString += `\"${getAsciiPerPixel(colorPalette.length)} c None\",\n`;
-          }
-
           for (let i = 0; i < (image.naturalWidth * image.naturalHeight); i++) {
             let modWidth = i % image.naturalWidth;
             XMPString += `${
@@ -173,7 +169,12 @@
         <h1 title="Skiotic">SKIOTIC</h1>
       </header>
       <article id="content-body">
-        <label>Load Image: </label><input id="upload" type="file">
+        <div style="margin-top: 20%;">
+          <p style="margin: 10px auto; text-align: center; text-indent: 0;">
+            <span style="color: #422f95;">Convert image files to the XPM format!:</span> 
+            <input id="upload" type="file">
+          </p>
+        </div>
       </article>
       <aside id="sidebar">
         <h3>PAGES--</h3>
