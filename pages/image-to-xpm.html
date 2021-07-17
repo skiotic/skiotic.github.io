@@ -120,6 +120,7 @@
           for (let i = 0; i < charsPerPixel; i++) {
             chars[i] =(baseArray[i] ? asciiSet[baseArray[i]] : asciiSet[0]);
           }
+          chars.reverse();
           return chars.join("");
         }
 
