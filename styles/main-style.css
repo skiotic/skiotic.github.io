@@ -147,7 +147,7 @@ h1::-moz-selection {
     overflow-y: auto;
 }
 
-#content-body p {
+#content-body p, h2 {
     font-family: sans-serif;
     text-indent: 30px;
     margin: 0 auto;
@@ -157,8 +157,12 @@ h1::-moz-selection {
     width: 90%;
 }
 
-#content-body p:first-child {
-    margin-top: 50px;
+h2 {
+    font-weight: normal;
+    font-style: italic;
+    font-size: 2.5em;
+    text-align: center;
+    margin: 100px auto;
 }
 
 #content-body img {
@@ -212,12 +216,6 @@ h1::-moz-selection {
     #header {
         background-color: var(--trans1);
         position: relative;
-    }
-    #sidebar {
-        -webkit-overflow-scrolling: touch;
-    }
-    #content-body {
-        -webkit-overflow-scrolling: touch;
     }
     h1 {
         font-size: 1.5em;

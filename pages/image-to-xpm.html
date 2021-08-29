@@ -102,7 +102,7 @@
             return digitArray;
           }
           while (true) {
-            let currQuotient = Math.floor(quotient / radix);
+            let currQuotient = Math.trunc(quotient / radix);
             if (currQuotient < radix) {
               digitArray.push(quotient % radix);
               digitArray.push(currQuotient);
@@ -118,7 +118,7 @@
           let chars = new Array(charsPerPixel).fill(0);
           let baseArray = toBaseArray(index, asciiSet.length);
           for (let i = 0; i < charsPerPixel; i++) {
-            chars[i] =(baseArray[i] ? asciiSet[baseArray[i]] : asciiSet[0]);
+            chars[i] = (baseArray[i] ? asciiSet[baseArray[i]] : asciiSet[0]);
           }
           chars.reverse();
           return chars.join("");
@@ -140,7 +140,6 @@
           let a = document.createElement("a");
           let objURL = (URL || webkitURL).createObjectURL(file);
           a.href =  objURL;
-          a.style.display = "none";
           a.download = "xpm-image.xpm";
           a.click();
           (URL || webkitURL).revokeObjectURL(objURL);
