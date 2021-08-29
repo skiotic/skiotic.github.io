@@ -23,17 +23,6 @@ html {
     text-align: center;
 }
 
-h1 {
-    font-family: 'Roboto Slab', serif;
-    font-style: italic;
-    text-align: center;
-    color: var(--text);
-    font-size: 300%;
-    letter-spacing: 6px;
-    margin: 0;
-    padding: 20px 0;
-}
-
 p {
     color: var(--text);
 }
@@ -55,6 +44,29 @@ button {
     cursor: pointer;
     width: 115px;
     transition: 0.3s;
+}
+
+h1 {
+    font-family: 'Roboto Slab', serif;
+    font-style: italic;
+    text-align: center;
+    color: var(--text);
+    font-size: 300%;
+    letter-spacing: 6px;
+    margin: 0;
+    padding: 20px 0;
+}
+
+h2 {
+    font-weight: normal;
+    font-style: italic;
+    font-size: 2.5em;
+    text-align: center;
+    margin: 100px auto;
+    font-family: sans-serif;
+    text-indent: 30px;
+    line-height: 1.4em;
+    width: 90%;
 }
 
 h3 {
@@ -147,7 +159,7 @@ h1::-moz-selection {
     overflow-y: auto;
 }
 
-#content-body p, h2 {
+#content-body p {
     font-family: sans-serif;
     text-indent: 30px;
     margin: 0 auto;
@@ -157,12 +169,8 @@ h1::-moz-selection {
     width: 90%;
 }
 
-h2 {
-    font-weight: normal;
-    font-style: italic;
-    font-size: 2.5em;
-    text-align: center;
-    margin: 100px auto;
+#content-body p:last-of-type {
+    margin-bottom: 2.5em;
 }
 
 #content-body img {
