@@ -1,18 +1,18 @@
-function insertContent(href, localHref, content) {
-    const contentArea = document.querySelector('#content-body');
-    if (
-        (
-            (window.location.protocol == "https:" || window.location.protocol == "http:") &&
-            window.location.href == href
-        ) || 
-        (
-            window.location.protocol == "file:" &&
-            window.location.href.substring(window.location.href.length - localHref.length) == localHref
-        )
-    ) { contentArea.innerHTML = content; }
-}
-
 window.addEventListener('load', function() {
+    let insertContent = function(href, localHref, content) {
+        const contentArea = document.querySelector('#content-body');
+        if (
+            (
+                (window.location.protocol == "https:" || window.location.protocol == "http:") &&
+                window.location.href == href
+            ) || 
+            (
+                window.location.protocol == "file:" &&
+                window.location.href.substring(window.location.href.length - localHref.length) == localHref
+            )
+        ) { contentArea.innerHTML = content; }
+    }
+
     const homeBtn = document.querySelector("#home-btn");
 
     homeBtn.addEventListener('click', () => window.open("https://skiotic.github.io"));
