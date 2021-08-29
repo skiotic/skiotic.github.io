@@ -5,7 +5,7 @@ window.addEventListener('load', function() {
     homeBtn.addEventListener('click', () => window.open("https://skiotic.github.io"));
 
     const localHref = "skiotic.github.io/index.html";
-    if (window.location.href == "https://skiotic.github.io" ||
+    if (window.location.href == "https://skiotic.github.io/" ||
         window.location.href.substring(window.location.href.length - localHref.length) == localHref
     ) {
         contentArea.innerHTML = `<h2>Hello! This site is under construction. Have some Lorem Ipsum!</h2>
