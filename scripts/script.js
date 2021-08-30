@@ -2,7 +2,7 @@ window.addEventListener('load', function() {
     let pageSetup = function() {
         const prefix = "#pages:";
     
-        let insertContent = function(hash, content, headScript = null) {
+        let insertContent = function(hash, content, callback = null) {
             const contentArea = document.querySelector('#content-body');
 
             if (
@@ -10,7 +10,7 @@ window.addEventListener('load', function() {
                 (window.location.hash == "" && hash == "")
             ) {
                 contentArea.innerHTML = content;
-                headScript != null ? headScript() : null;
+                callback != null ? callback() : null;
             }
         }
     
@@ -59,11 +59,11 @@ function imageToXPMsrc() {
         let hexAsciiMap = new Map(); // Map<colorHex, asciiChars>
 
         alphaThreshold = parseInt(
-        alphaThreshold ?
-            confirm("Use the current alpha threshold [" + alphaThreshold + "]?") ?
-            alphaThreshold
+        alphaThreshold
+            ? confirm("Use the current alpha threshold [" + alphaThreshold + "]?")
+                ? alphaThreshold
+                : prompt("Set the alpha threshold value [0-255]:\n")
             : prompt("Set the alpha threshold value [0-255]:\n")
-        : prompt("Set the alpha threshold value [0-255]:\n")
         );
 
         const canvas = document.createElement("canvas");

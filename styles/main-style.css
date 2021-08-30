@@ -3,7 +3,7 @@
     --bg2: #dea7eb;
     --button-color: #3b112f;
     --trans1: #ffffff66;
-    --text: #120700;
+    --text: #19191d;
     --text2: #ffffff;
     --main-font: 'Lato';
 }
@@ -160,7 +160,7 @@ h1::-moz-selection {
 }
 
 #content-body p {
-    font-family: sans-serif;
+    font-family: 'Noto Sans JP', sans-serif;
     text-indent: 30px;
     margin: 0 auto;
     margin-top: 18px;
