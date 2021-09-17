@@ -60,7 +60,7 @@
                             break;
                         }
                     }
-                    return { length: Math.sqrt(length2), amount: i, limit: limit };
+                    return { length: length2, amount: i, limit: limit2 };
                 },
                 "burningship": function(cx, cy, iter) {
                     const limit = 1e6;
@@ -80,7 +80,7 @@
                             break;
                         }
                     }
-                    return { length: Math.sqrt(length2), amount: i, limit: limit };
+                    return { length: length2, amount: i, limit: limit2 };
                 },
                 "chirikov": function(cx, cy, iter) {
                     const limit = 100;
@@ -97,14 +97,14 @@
                             break;
                         }
                     }
-                    return { length: Math.sqrt(length2), amount: i, limit: limit };
+                    return { length: length2, amount: i, limit: limit2 };
                 }
             };
             Object.freeze(fractal);
 
-            function checkStable(length, amount, limit) {
-                let scalar = Math.log(1 + Math.max(0, amount - Math.log2(Math.log2(length*length))));
-                if (length < limit) {
+            function checkStable(length2, amount, limit2) {
+                let scalar = Math.log(1 + Math.max(0, amount - Math.log2(Math.log2(length2))));
+                if (length2 < limit2) {
                     return [0, 0, 0];
                 }
                 return [
