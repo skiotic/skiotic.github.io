@@ -103,7 +103,7 @@
             Object.freeze(fractal);
 
             function checkStable(length, amount, limit) {
-                let scalar = Math.log(1 + Math.max(0, amount - Math.log2(Math.log2(length ** 2))));
+                let scalar = Math.log(1 + Math.max(0, amount - Math.log2(Math.log2(length*length))));
                 if (length < limit) {
                     return [0, 0, 0];
                 }
