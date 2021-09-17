@@ -249,28 +249,29 @@
                 document.querySelector("#default-btn").addEventListener("click", setToDefault);
                 window.addEventListener('keyup', k => {
                     k.preventDefault();
-                    if (k.key == "q") {
+                    const char = k.key.toLowerCase();
+                    if (char == "q" || char == "a") {
                         config.shiftX = curCoords.x;
                         config.shiftY = curCoords.y;
                         config.zoom *= 2;
 
                         window.requestAnimationFrame(drawLoading);
-                    } else if (k.key.toLowerCase() == "e") {
+                    } else if (char == "e") {
                         config.shiftX = curCoords.x;
                         config.shiftY = curCoords.y;
                         config.zoom *= 0.5;
                         window.requestAnimationFrame(drawLoading);
                     } else {
-                        if (k.key.toLowerCase() == "d") {
+                        if (char == "arrowright") {
                             config.shiftX += 0.25 / config.zoom;
                             window.requestAnimationFrame(drawLoading);
-                        } else if (k.key.toLowerCase() == "w") {
+                        } else if (char == "arrowup") {
                             config.shiftY -= 0.25 / config.zoom;
                             window.requestAnimationFrame(drawLoading);
-                        } else if (k.key.toLowerCase() == "a") {
+                        } else if (char == "arrowleft") {
                             config.shiftX -= 0.25 / config.zoom;
                             window.requestAnimationFrame(drawLoading);
-                        } else if (k.key.toLowerCase() == "s") {
+                        } else if (char == "arrowdown") {
                             config.shiftY += 0.25 / config.zoom;
                             window.requestAnimationFrame(drawLoading);
                         }
@@ -317,7 +318,7 @@
                 border-radius: 0.25em;
                 position: absolute;
                 font-family: sans-serif;
-                left: 50em;
+                left: 48em;
                 bottom: 0.2em;
                 user-select: none;
             }
@@ -370,12 +371,12 @@
                 </div>
                 <p id="controls" title="List of controls">
                     Controls:<br>
-                    <span class="ctrls" title="Press Q to zoom in">q: Zoom in</span>
+                    <span class="ctrls" title="Press Q or A to zoom in">q or a: Zoom in</span>
                     <span class="ctrls" title="Press E to zoom out">e: Zoom out</span>
-                    <span class="ctrls" title="Press W to move the center up">w: Up</span>
-                    <span class="ctrls" title="Press A to move the center left">a: Left</span>
-                    <span class="ctrls" title="Press S to move the center down">s: Down</span>
-                    <span class="ctrls" title="Press D to move the center right">d: Right</span>
+                    <span class="ctrls" title="Press Up Arrow to move the center up">Up Arrow: Up</span>
+                    <span class="ctrls" title="Press Left Arrow to move the center left">Left Arrow: Left</span>
+                    <span class="ctrls" title="Press Down Arrow to move the center down">Down Arrow: Down</span>
+                    <span class="ctrls" title="Press Right Arrow to move the center right">Right Arrow: Right</span>
                 </p>
             </main>
         </div>
