@@ -44,53 +44,60 @@
             const fractal = {
                 "mandelbrot": function(cx, cy, iter) {
                     const limit = 1e6;
+                    const limit2 = limit*limit;
                     let x = cx, y = cy;
                     let i;
-                    let length;
+                    let length2;
                     for (i = 0; i < iter; i++) {
                         let xtemp = x;
-                        x = (x*x) - (y*y) + cx;
+                        let x2 = x*x;
+                        let y2 = y*y;
+                        x = x2 - y2 + cx;
                         y = 2*(xtemp*y) + cy;
 
-                        length = Math.hypot(x, y);
-                        if (length > limit) {
+                        length2 = x2 + y2;
+                        if (length2 > limit2) {
                             break;
                         }
                     }
-                    return {length: length, amount: i, limit: limit};
+                    return {length: Math.sqrt(length2), amount: i, limit: limit};
                 },
                 "burningship": function(cx, cy, iter) {
                     const limit = 1e6;
+                    const limit2 = limit*limit;
                     let x = cx, y = cy;
                     let i;
-                    let length;
+                    let length2;
                     for (i = 0; i < iter; i++) {
                         let xtemp = x;
-                        x = (x*x) - (y*y) + cx;
+                        let x2 = x*x;
+                        let y2 = y*y;
+                        x = x2 - y2 + cx;
                         y = 2*Math.abs(xtemp*y) + cy;
 
-                        length = Math.hypot(x, y);
-                        if (length > limit) {
+                        length2 = x2 + y2;
+                        if (length2 > limit2) {
                             break;
                         }
                     }
-                    return {length: length, amount: i, limit: limit};
+                    return {length: Math.sqrt(length2), amount: i, limit: limit};
                 },
                 "chirikov": function(cx, cy, iter) {
                     const limit = 100;
+                    const limit2 = limit*limit;
                     let x = cx, y = cy;
                     let i;
-                    let length;
+                    let length2;
                     for (i = 0; i < iter; i++) {
                         y = y + (cy*Math.sin(x));
                         x = x + (cx*y);
 
-                        length = Math.hypot(x, y);
-                        if (length > limit) {
+                        length2 = (x*x) + (y*y);
+                        if (length2 > limit2) {
                             break;
                         }
                     }
-                    return {length: length, amount: i, limit: limit};
+                    return {length: Math.sqrt(length2), amount: i, limit: limit};
                 }
             };
             Object.freeze(fractal);
