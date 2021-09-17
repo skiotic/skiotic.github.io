@@ -250,28 +250,28 @@
                 window.addEventListener('keyup', k => {
                     k.preventDefault();
                     const char = k.key.toLowerCase();
-                    if (char == "q" || char == "a") {
+                    if (char == "u") {
                         config.shiftX = curCoords.x;
                         config.shiftY = curCoords.y;
                         config.zoom *= 2;
 
                         window.requestAnimationFrame(drawLoading);
-                    } else if (char == "e") {
+                    } else if (char == "o") {
                         config.shiftX = curCoords.x;
                         config.shiftY = curCoords.y;
                         config.zoom *= 0.5;
                         window.requestAnimationFrame(drawLoading);
                     } else {
-                        if (char == "arrowright") {
+                        if (char == "l") {
                             config.shiftX += 0.25 / config.zoom;
                             window.requestAnimationFrame(drawLoading);
-                        } else if (char == "arrowup") {
+                        } else if (char == "i") {
                             config.shiftY -= 0.25 / config.zoom;
                             window.requestAnimationFrame(drawLoading);
-                        } else if (char == "arrowleft") {
+                        } else if (char == "j") {
                             config.shiftX -= 0.25 / config.zoom;
                             window.requestAnimationFrame(drawLoading);
-                        } else if (char == "arrowdown") {
+                        } else if (char == "k") {
                             config.shiftY += 0.25 / config.zoom;
                             window.requestAnimationFrame(drawLoading);
                         }
@@ -371,12 +371,12 @@
                 </div>
                 <p id="controls" title="List of controls">
                     Controls:<br>
-                    <span class="ctrls" title="Press Q or A to zoom in">q or a: Zoom in</span>
-                    <span class="ctrls" title="Press E to zoom out">e: Zoom out</span>
-                    <span class="ctrls" title="Press Up Arrow to move the center up">Up Arrow: Up</span>
-                    <span class="ctrls" title="Press Left Arrow to move the center left">Left Arrow: Left</span>
-                    <span class="ctrls" title="Press Down Arrow to move the center down">Down Arrow: Down</span>
-                    <span class="ctrls" title="Press Right Arrow to move the center right">Right Arrow: Right</span>
+                    <span class="ctrls" title="Press U zoom in">u: Zoom in</span>
+                    <span class="ctrls" title="Press O to zoom out">o: Zoom out</span>
+                    <span class="ctrls" title="Press I to move the center up">i: Up</span>
+                    <span class="ctrls" title="Press J to move the center left">j: Left</span>
+                    <span class="ctrls" title="Press K to move the center down">k: Down</span>
+                    <span class="ctrls" title="Press L to move the center right">l: Right</span>
                 </p>
             </main>
         </div>
