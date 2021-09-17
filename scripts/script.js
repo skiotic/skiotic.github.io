@@ -1,6 +1,8 @@
+let pageChange;
 window.addEventListener('load', function() {
     let pageSetup = function() {
         const prefix = "#pages:";
+        pageChange = false;
     
         let insertContent = function(hash, content, callback = null) {
             const contentArea = document.querySelector('#content-body');
@@ -42,9 +44,22 @@ window.addEventListener('load', function() {
             </div>`,
             imageToXPMsrc
         );
+
+        insertContent(
+            "sometext",
+            `<div style="background-color: black; width: 100%; height: 100%; position: relative">
+                <img style="border: none;" id="some-img" src="./assets/some-text.gif">
+                <p id="some-text" style="color: white; font-size: 5em; z-index: 10; position: absolute; top: 160px; left: 30%; transform: rotate(-20deg); max-width: 500px;">Oh. you lose.</p>
+            </div>
+            `.trim()
+        );
     }
     pageSetup();
-    window.addEventListener('hashchange', pageSetup);
+    window.addEventListener('hashchange', () => {
+        pageChange = true;
+
+        pageSetup();
+    });
 });
 
 function imageToXPMsrc() {
@@ -78,16 +93,16 @@ function imageToXPMsrc() {
 
         // Pulling out RGB components and pushing them as hex strings, accounting for alphaThreshold.
         for (let i = 0; i < imageData.data.length; i += 4) {
-        let alpha = imageData.data[i + 3] / 255;
-        pixelHexArray.push(
-            imageData.data[i + 3] < alphaThreshold ?
-            "None"
-            : RGBToHex(
-            imageData.data[i + 0] * alpha,
-            imageData.data[i + 1] * alpha,
-            imageData.data[i + 2] * alpha
-            )
-        );
+            let alpha = imageData.data[i + 3] / 255;
+            pixelHexArray.push(
+                imageData.data[i + 3] < alphaThreshold
+                    ? "None"
+                    : RGBToHex(
+                        imageData.data[i + 0] * alpha,
+                        imageData.data[i + 1] * alpha,
+                        imageData.data[i + 2] * alpha
+                    )
+            );
         }
         // To filter for first occurance of a color.
         for (let i = 0; i < pixelHexArray.length; i++) {
@@ -113,11 +128,12 @@ function imageToXPMsrc() {
             }${
             hexAsciiMap.get(pixelHexArray[i])
             }${
-            modWidth != (image.naturalWidth - 1) || i == 0 ?
-                ""
-                : i != (image.naturalWidth * image.naturalHeight) - 1 ?
-                "\",\n"
-            : "\""}`;
+            modWidth != (image.naturalWidth - 1) || i == 0
+                ? ""
+                : i != (image.naturalWidth * image.naturalHeight) - 1
+                    ? "\",\n"
+                    : "\""
+            }`;
         }
         return (XMPString + "}").trim();
     }
@@ -131,10 +147,7 @@ function imageToXPMsrc() {
         let quotient = number;
         
         if (radix <= 1) {
-        for (let i = 0; i < number; i++) {
-            digitArray.push(1);
-        }
-        return digitArray;
+            throw new Error("Invalid base");
         }
         while (true) {
         let currQuotient = Math.trunc(quotient / radix);
@@ -142,7 +155,7 @@ function imageToXPMsrc() {
             digitArray.push(quotient % radix);
             digitArray.push(currQuotient);
             break;
-        };
+        }
         digitArray.push(quotient % radix);
         quotient = currQuotient;
         }
@@ -192,6 +205,5 @@ function imageToXPMsrc() {
         });
         reader.readAsDataURL(file);
     }
-    
     document.querySelector("#upload").onchange = e => upload(e.target);
 }
