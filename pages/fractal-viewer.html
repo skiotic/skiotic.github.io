@@ -149,7 +149,7 @@
                         if (elem.id === "select-fract") {
                             curFractal = elem.value;
                         } else {
-                            config[elemValueMap[elem.id]] = parseFloat(elem.value);
+                            config[elemValueMap[elem.id]] = parseFloat(elem.value) ?? config[elemValueMap[elem.id]];
                         }
                     });
                     window.requestAnimationFrame(drawLoading);
@@ -331,7 +331,7 @@
             }
             #input-group {
                 position: absolute;
-                bottom: -25em;
+                bottom: -26em;
                 left: 2em;
             }
             #input-group * {
@@ -382,8 +382,10 @@
                         <option value="burningship">Burning Ship</option>
                         <option value="chirikov">Chirikov Map</option>
                     </select>
-                    <button id="changes-btn" style="width: 8em;">Apply Changes</button>
-                    <button id="default-btn" style="width: 8em;">Default Reset</button>
+                    <div>
+                        <button id="changes-btn" style="width: 8em;">Apply Changes</button>
+                        <button id="default-btn" style="width: 8em;">Default Reset</button>
+                    </div>
                 </div>
                 <p id="controls" title="List of controls">
                     Controls:<br>
