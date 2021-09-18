@@ -12,9 +12,12 @@ window.addEventListener('load', function() {
                     for (let i = 0; i < json["links"].length; i++) {
                         linkArea.innerHTML += json["links"][i];
                     }
+                } else {
+                    throw new Error("Request unsuccessful");
                 }
             }
         };
+        req.send();
     })();
 
     let pageSetup = function() {
