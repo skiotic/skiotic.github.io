@@ -177,6 +177,9 @@
                     Object.keys(config).forEach(propname => {
                         config[propname] = defaultConfig[propname];
                     });
+                    document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
+                        elem.setAttribute("title", elem.value);
+                    });
                     assignValues();
                     window.requestAnimationFrame(drawLoading);
                 }
@@ -303,9 +306,6 @@
                     downloads++;
                 });
                 setToDefault();
-                document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
-                    elem.setAttribute("title", elem.value);
-                });
                 window.requestAnimationFrame(drawLoading);
             });
         </script>
