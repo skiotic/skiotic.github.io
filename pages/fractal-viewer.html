@@ -178,7 +178,7 @@
                         config[propname] = defaultConfig[propname];
                     });
                     document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
-                        elem.setAttribute("title", elem.value);
+                        elem.setAttribute("title", config[elemValueMap[elem.id]]);
                     });
                     assignValues();
                     window.requestAnimationFrame(drawLoading);
