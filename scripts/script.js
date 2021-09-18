@@ -1,7 +1,7 @@
 let pageChange;
 window.addEventListener('load', function() {
     let pageSetup = function() {
-        const prefix = "#pages:";
+        const prefix = "#subtext:";
         pageChange = false;
     
         let insertContent = function(hash, content, callback = null) {
@@ -9,10 +9,12 @@ window.addEventListener('load', function() {
 
             if (
                 window.location.hash == (prefix + hash) ||
-                (window.location.hash == "" && hash == "" && window.location.href.endsWith("index.html"))
+                (window.location.hash == "" && hash == "" &&
+                    (window.location.href.endsWith("skiotic.github.io\/") || window.location.href.endsWith("skiotic.github.io\/index.html"))
+                )
             ) {
                 contentArea.innerHTML = content;
-                callback != null ? callback() : null;
+                (callback ?? (() => {}))();
             }
         }
     
