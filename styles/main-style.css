@@ -2,7 +2,7 @@
     --bg1: #c7d7f2;
     --bg2: #dea7eb;
     --button-color: #3b112f;
-    --trans1: #ffffff66;
+    --trans1: #ffffff2d;
     --text: #19191d;
     --text2: #ffffff;
     --main-font: 'Lato';
@@ -155,7 +155,6 @@ h1::-moz-selection {
     width: 100%;
     min-width: 300px;
     max-width: 1320px;
-    max-height: 900px;
     overflow-y: auto;
 }
 
