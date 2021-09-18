@@ -9,7 +9,7 @@ window.addEventListener('load', function() {
 
             if (
                 window.location.hash == (prefix + hash) ||
-                (window.location.hash == "" && hash == "")
+                (window.location.hash == "" && hash == "" && window.location.href.endsWith("index.html"))
             ) {
                 contentArea.innerHTML = content;
                 callback != null ? callback() : null;
@@ -35,17 +35,6 @@ window.addEventListener('load', function() {
         );
 
         insertContent(
-            "images-to-xmp", 
-            `<div style="margin-top: 20%;">
-              <p style="margin: 10px auto; text-align: center; text-indent: 0;">
-                <span style="color: #422f95;">Convert image files to the XPM format!:</span> 
-                <input id="upload" type="file">
-              </p>
-            </div>`,
-            imageToXPMsrc
-        );
-
-        insertContent(
             "sometext",
             `<div style="background-color: black; width: 100%; height: 100%; position: relative">
                 <img style="border: none;" id="some-img" src="./assets/some-text.gif">
@@ -61,149 +50,3 @@ window.addEventListener('load', function() {
         pageSetup();
     });
 });
-
-function imageToXPMsrc() {
-    let alphaThreshold;
-    let imgCount = 0;
-    let charsPerPixel = 1;
-    let asciiSet = ".+@#$%&*=-;>,\')!~{]^\/(_:<[}|1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-
-    let imageDataToXMPString = function(image) {
-        let pixelHexArray = [];
-        let colorPalette = [];
-        let hexAsciiMap = new Map(); // Map<colorHex, asciiChars>
-
-        alphaThreshold = parseInt(
-        alphaThreshold
-            ? confirm("Use the current alpha threshold [" + alphaThreshold + "]?")
-                ? alphaThreshold
-                : prompt("Set the alpha threshold value [0-255]:\n")
-            : prompt("Set the alpha threshold value [0-255]:\n")
-        );
-
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = image.naturalWidth;
-        canvas.height = image.naturalHeight;
-        ctx.imageSmoothingEnabled = false;
-
-        ctx.drawImage(image, 0, 0);
-        
-        let imageData = ctx.getImageData(0, 0, image.naturalWidth, image.naturalHeight);
-
-        // Pulling out RGB components and pushing them as hex strings, accounting for alphaThreshold.
-        for (let i = 0; i < imageData.data.length; i += 4) {
-            let alpha = imageData.data[i + 3] / 255;
-            pixelHexArray.push(
-                imageData.data[i + 3] < alphaThreshold
-                    ? "None"
-                    : RGBToHex(
-                        imageData.data[i + 0] * alpha,
-                        imageData.data[i + 1] * alpha,
-                        imageData.data[i + 2] * alpha
-                    )
-            );
-        }
-        // To filter for first occurance of a color.
-        for (let i = 0; i < pixelHexArray.length; i++) {
-        let amountOfHex = colorPalette.filter(value => value == pixelHexArray[i]).length;
-        if (amountOfHex === 0) colorPalette.push(pixelHexArray[i]);
-        }
-
-        // Set amount of chars per pixel according to how many colors are used.
-        charsPerPixel = Math.ceil(baseLog(asciiSet.length, colorPalette.length));
-        
-        let XMPString = `
-        /* XPM */\nstatic char * xpm_image_${imgCount++}[] = {\n"${image.naturalWidth} ${image.naturalHeight} ${colorPalette.length} ${charsPerPixel}",\n`
-
-        for (let i = 0; i < colorPalette.length; i++) {
-        hexAsciiMap.set(colorPalette[i], getAsciiPerPixel(i));
-        XMPString += `\"${getAsciiPerPixel(i)} c ${colorPalette[i]}\",\n`;
-        }
-
-        for (let i = 0; i < (image.naturalWidth * image.naturalHeight); i++) {
-        let modWidth = i % image.naturalWidth;
-        XMPString += `${
-            (modWidth == 0 || i == 0) ? "\"" : ""
-            }${
-            hexAsciiMap.get(pixelHexArray[i])
-            }${
-            modWidth != (image.naturalWidth - 1) || i == 0
-                ? ""
-                : i != (image.naturalWidth * image.naturalHeight) - 1
-                    ? "\",\n"
-                    : "\""
-            }`;
-        }
-        return (XMPString + "}").trim();
-    }
-
-    let baseLog = function(x, y) {
-        return (Math.log(y) / Math.log(x));
-    }
-
-    let toBaseArray = function(number, radix) {
-        let digitArray = [];
-        let quotient = number;
-        
-        if (radix <= 1) {
-            throw new Error("Invalid base");
-        }
-        while (true) {
-        let currQuotient = Math.trunc(quotient / radix);
-        if (currQuotient < radix) {
-            digitArray.push(quotient % radix);
-            digitArray.push(currQuotient);
-            break;
-        }
-        digitArray.push(quotient % radix);
-        quotient = currQuotient;
-        }
-        return digitArray;
-    }
-
-    let getAsciiPerPixel = function(index) {
-        let chars = new Array(charsPerPixel).fill(0);
-        let baseArray = toBaseArray(index, asciiSet.length);
-        for (let i = 0; i < charsPerPixel; i++) {
-        chars[i] = (baseArray[i] ? asciiSet[baseArray[i]] : asciiSet[0]);
-        }
-        chars.reverse();
-        return chars.join("");
-    }
-
-    let RGBToHex = function(red, green, blue) {
-        red = red.toString(16);
-        green = green.toString(16);
-        blue = blue.toString(16);
-        return "#" + new String(
-        (red.length === 1 ? `0${red}` : Number("0x" + red) > 255 ? "ff" : red) +
-        (green.length === 1 ? `0${green}` : Number("0x" + green) > 255 ? "ff" : green) +
-        (blue.length === 1 ? `0${blue}` : Number("0x" + blue) > 255 ? "ff" : blue)
-        );
-    }
-
-    let stringToXPMFile = function(string) {
-        let file = new File([new Blob([string])], "image", {type: "image/x-xpixmap"});
-        let a = document.createElement("a");
-        let objURL = (URL || webkitURL).createObjectURL(file);
-        a.href =  objURL;
-        a.download = "xpm-image.xpm";
-        a.click();
-        (URL || webkitURL).revokeObjectURL(objURL);
-        a.remove();
-    }
-
-    let upload = function(input) {
-        let file = input.files[0];
-        let reader = new FileReader();
-        reader.addEventListener("load", _ => {
-            let image = new Image();
-            image.src = reader.result;
-            image.onload = function() {stringToXPMFile(imageDataToXMPString(image))};
-            input.value = null;
-        });
-        reader.readAsDataURL(file);
-    }
-    document.querySelector("#upload").onchange = e => upload(e.target);
-}

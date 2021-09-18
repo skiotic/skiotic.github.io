@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html lang='en'>
     <head>
-        <meta charset='UTF-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1'>
-        <meta http-equiv='content-type' content='text/html'>
-        <title>Fractals</title>
+        <title>Skiotic | Fractal Viewer</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Fractal viewer in JavaScript">
+        <meta name="keywords" content="skiotic">
+        <link rel="icon" type="image/x-icon" href="../favicon.ico">
+        <link rel="stylesheet" type="text/css" href="../styles/main-style.css">
+        <script type="text/javascript" src="../scripts/script.js"></script>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto+Slab&display=swap">
+        <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@1,400;1,700&display=swap">
+        <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap">
         <script type="text/javascript">
             var saveCount = 0;// Amount of images saved from fractal canvas
             const width = 1000;// Canvas width
@@ -302,42 +310,52 @@
             });
         </script>
         <style>
-            #canvas-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                z-index: 10;
+            #main-grid {max-width: 1290px;}
+            #content-body {
+                width: 1017px;
+                text-align: left;
+            }
+            #content-body div:last-of-type {
+                margin-bottom: 2em;
+            }
+            #content-body * {
+                color: black;
+            }
+            #canvas-container {
+                width: 1000px;
+                height: 1000px;
+                position: relative;
+                margin-bottom: 2em;
             }
             #canvas-base {
                 position: absolute;
-                top: 0;
-                left: 0;
                 z-index: 0;
             }
-            #btn {
-                z-index: 15;
+            #canvas-overlay {
                 position: absolute;
+                z-index: 10;
+            }
+            #btn {
+                position: absolute;
+                bottom: 3em;
                 left: 2em;
-                bottom: 0.2em;
+                z-index: 15;
             }
             #controls {
+                position: absolute;
+                right: 3em;
+                bottom: 3em;
                 z-index: 15;
+                max-width: 150px;
                 background-color: #f8f9ffc5;
                 padding: 2em;
                 border-radius: 0.25em;
-                position: absolute;
                 font-family: sans-serif;
-                left: 48em;
-                bottom: 0.2em;
                 user-select: none;
-            }
-            #input-group {
-                position: absolute;
-                bottom: -26em;
-                left: 2em;
             }
             #input-group * {
                 vertical-align: middle;
+                margin-left: 2em;
             }
             #input-group input {
                 font-family: sans-serif;
@@ -346,7 +364,9 @@
             }
             #input-group select {
                 font-family: sans-serif;
+                width: 10rem;
                 margin: 0.5em 0;
+                margin-left: 2em;
             }
             #input-group label {
                 font-family: sans-serif;
@@ -362,11 +382,25 @@
         </style>
     </head>
     <body>
-        <div>
-            <main style="display: inline-block;">
-                <canvas id="canvas-base" title="Display of generated fractal shape with colored shading"></canvas>
-                <canvas id="canvas-overlay" title="Overlay that shows cursor coordinates"></canvas>
-                <button id="btn">Save Fractal Frame</button>
+        <main id="main-grid">
+            <header id="header">
+              <h1 title="Skiotic">SKIOTIC</h1>
+            </header>
+            <article id="content-body" style="overflow: auto;">
+                <div id="canvas-container">
+                    <canvas id="canvas-base" title="Display of generated fractal shape with colored shading"></canvas>
+                    <canvas id="canvas-overlay" title="Overlay that shows cursor coordinates"></canvas>
+                    <button id="btn">Save Fractal Frame</button>
+                    <p id="controls" title="List of controls">
+                        Controls:<br>
+                        <span class="ctrls" title="Press U zoom in">u: Zoom in</span>
+                        <span class="ctrls" title="Press O to zoom out">o: Zoom out</span>
+                        <span class="ctrls" title="Press I to move the center up">i: Up</span>
+                        <span class="ctrls" title="Press J to move the center left">j: Left</span>
+                        <span class="ctrls" title="Press K to move the center down">k: Down</span>
+                        <span class="ctrls" title="Press L to move the center right">l: Right</span>
+                    </p>
+                </div>
                 <div id="input-group" style="display: flex; flex-direction: column;">
                     <label>Iterations: <input id="iter" type="text"></label>
                     <label>Zoom: <input id="zoom" type="text"></label>
@@ -389,16 +423,20 @@
                         <button id="default-btn" style="width: 8em;">Default Reset</button>
                     </div>
                 </div>
-                <p id="controls" title="List of controls">
-                    Controls:<br>
-                    <span class="ctrls" title="Press U zoom in">u: Zoom in</span>
-                    <span class="ctrls" title="Press O to zoom out">o: Zoom out</span>
-                    <span class="ctrls" title="Press I to move the center up">i: Up</span>
-                    <span class="ctrls" title="Press J to move the center left">j: Left</span>
-                    <span class="ctrls" title="Press K to move the center down">k: Down</span>
-                    <span class="ctrls" title="Press L to move the center right">l: Right</span>
-                </p>
-            </main>
-        </div>
+            </article>
+            <aside id="sidebar">
+              <h3>PAGES--</h3>
+              <p id="sidebar-text">
+                <a href="https://skiotic.github.io/pages/image-to-xpm.html">Images to XPM format</a><br>
+                <a href="https://skiotic.github.io/pages/fractal-viewer.html">Fractal Viewer</a>
+              </p>
+            </aside>
+          </main>
+          <div id="footer-wrapper">
+            <footer id="footer-bar">
+              <button type="button" class="footer-link" id="home-btn" title="Home">Home</button>
+              <button type="button" class="footer-link" id="about-btn" title="About">About</button>
+            </footer>
+          </div>
     </body>
 </html>
