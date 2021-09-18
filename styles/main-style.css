@@ -1,6 +1,6 @@
 :root {
-    --bg1: #c7d7f2;
-    --bg2: #dea7eb;
+    --bg1: #d7bcf6;
+    --bg2: #ffc5ff;
     --button-color: #3b112f;
     --trans1: #ffffff2d;
     --trans2: #ffffffb9;
@@ -10,8 +10,8 @@
 }
 
 html {
-    background-attachment: fixed;
-    background-image: linear-gradient(0deg, var(--bg1), var(--bg2));
+    background-attachment: scroll;
+    background-image: linear-gradient(90deg, var(--bg1), var(--bg2));
 }
 
 #footer-wrapper {
