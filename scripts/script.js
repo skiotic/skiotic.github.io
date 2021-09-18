@@ -44,6 +44,20 @@ window.addEventListener('load', function() {
             </div>
             `.trim()
         );
+
+        insertContent(
+            "devlog-1",
+            `<h2>Log Sept-18-2021</h2>
+            <p>
+                Future plans for this site and method of posts:
+                <ul style=\"font-family: sans-serif;\">
+                    <li>Change post insertion to use a map instead</li>
+                    <li>Improve the responsiveness of the website</li>
+                    <li>Make the fractal viewer to be mobile-friendly</li>
+                </ul>
+            </p>
+            `.trim()
+        )
     }
     pageSetup();
     window.addEventListener('hashchange', () => {
