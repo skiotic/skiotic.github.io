@@ -3,6 +3,7 @@
     --bg2: #dea7eb;
     --button-color: #3b112f;
     --trans1: #ffffff2d;
+    --trans2: #ffffffb9;
     --text: #19191d;
     --text2: #ffffff;
     --main-font: 'Lato';
@@ -222,6 +223,7 @@ h1::-moz-selection {
     #header {
         background-color: var(--trans1);
         position: relative;
+        background-color: var(--trans2);
     }
     h1 {
         font-size: 1.5em;
@@ -255,7 +257,6 @@ h1::-moz-selection {
             position: sticky;
             width: 100%;
             max-height: 60px;
-            background-color: var(--trans1);
             grid-column: 1 / span 1;
             grid-row: 1 / span 1;
         }
