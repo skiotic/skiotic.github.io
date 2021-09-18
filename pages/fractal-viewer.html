@@ -247,10 +247,9 @@
                     window.requestAnimationFrame(drawOverlay);
                 });
                 document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
-                    elem.setAttribute("title", elem.value);
                     elem.addEventListener("change", () => {
                         elem.setAttribute("title", elem.value);
-                    })
+                    });
                 });
                 document.querySelector("#changes-btn").addEventListener("click", insertInputs);
                 document.querySelector("#default-btn").addEventListener("click", setToDefault);
@@ -296,6 +295,9 @@
                     downloads++;
                 });
                 setToDefault();
+                document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
+                    elem.setAttribute("title", elem.value);
+                });
                 window.requestAnimationFrame(drawLoading);
             });
         </script>
@@ -351,7 +353,7 @@
                 font-size: 0.8em;
             }
             #input-group input[type="range"] {
-                width: 14em;
+                width: 20em;
             }
             .ctrls {
                 margin-left: 20px;
