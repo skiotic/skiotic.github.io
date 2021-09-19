@@ -20,7 +20,7 @@
             var shiftX = 0, shiftY = 0;
             var zoom = 0.4
             const midpoint = {
-                x: Math.ceil(width/2),
+                x: Math.ceil(height/2),
                 y: Math.ceil(height/2)
             };
             const config = {
@@ -131,8 +131,8 @@
                 const baseCtx = base.getContext('2d', {alpha: false});
                 const overlayCtx = overlay.getContext('2d');
                 var curCoords = {
-                    x: ((mouseX-midpoint.x)/width)/config.zoom + config.shiftX,
-                    y: ((mouseY-midpoint.y)/height)/(config.zoom - (width - height)) + config.shiftY
+                    x: ((mouseX-midpoint.x)/height)/config.zoom + config.shiftX,
+                    y: ((mouseY-midpoint.y)/height)/config.zoom + config.shiftY
                 };
                 base.width = width;
                 base.height = height;
@@ -252,8 +252,8 @@
                     mouseX = e.clientX - overlay.getBoundingClientRect().left;
                     mouseY = e.clientY - overlay.getBoundingClientRect().top;
                     curCoords = {
-                        x: ((mouseX - midpoint.x)/width)/config.zoom + config.shiftX,
-                        y: ((mouseY - midpoint.y)/height)/(config.zoom - (width - height)) + config.shiftY
+                        x: ((mouseX - midpoint.x)/height)/config.zoom + config.shiftX,
+                        y: ((mouseY - midpoint.y)/height)/config.zoom + config.shiftY
                     };
 
                     window.requestAnimationFrame(drawOverlay);
