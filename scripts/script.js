@@ -21,7 +21,7 @@ window.addEventListener('load', function() {
     })();
 
     let pageSetup = function() {
-        const prefix = "#subtext:";
+        const prefix = "#content:";
         pageChange = false;
     
         let insertContent = function(hash, content, callback = null) {
