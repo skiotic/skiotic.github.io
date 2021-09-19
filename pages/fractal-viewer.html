@@ -15,7 +15,7 @@
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap">
         <script type="text/javascript">
             var saveCount = 0;// Amount of images saved from fractal canvas
-            const width = 1000;// Canvas width
+            const width = 1017;// Canvas width
             const height = 1000;// Canvas height
             var shiftX = 0, shiftY = 0;
             var zoom = 0.4
@@ -47,6 +47,7 @@
                 gWeight: 0.2,
                 bWeight: 0.2
             }
+            Object.freeze(defaultConfig);
             const tau = Math.PI * 2;
 
             const fractal = {
@@ -228,8 +229,8 @@
                                 throw new Error("Invalid fractal method");
                             })()
                         )(
-                            ((x - midpoint.x)/width)/config.zoom + config.shiftX,
-                            ((y - midpoint.y)/height)/(config.zoom - (width - height)) + config.shiftY,
+                            ((x - midpoint.x)/height)/config.zoom + config.shiftX,
+                            ((y - midpoint.y)/height)/config.zoom + config.shiftY,
                             config.iterations
                         );
                         const colorArr = checkStable(
