@@ -9,9 +9,7 @@ window.addEventListener('load', function() {
                 if (req.status === 0 || (req.status >= 200 && req.status < 400)) {
                     json = JSON.parse(req.responseText);
                     let linkArea = document.querySelector("#sidebar-text");
-                    for (let i = 0; i < json["links"].length; i++) {
-                        linkArea.innerHTML += json["links"][i];
-                    }
+                    linkArea.innerHTML += json["links"].join("<br>");
                 } else {
                     throw new Error("Request unsuccessful");
                 }

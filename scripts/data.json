@@ -1,6 +1,9 @@
 {
     "links": [
-        "<a href=\"https://skiotic.github.io/pages/image-to-xpm.html\">Images to XPM format</a><br>",
-        "<a href=\"https://skiotic.github.io/pages/fractal-viewer.html\">Fractal Viewer</a>"
+        "--APPS--",
+        "<a href=\"https://skiotic.github.io/pages/image-to-xpm.html\">Images to XPM format</a>",
+        "<a href=\"https://skiotic.github.io/pages/fractal-viewer.html\">Fractal Viewer</a>",
+        "--LOGS--",
+        "<a href=\"https://skiotic.github.io/#content:devlog-1\">Init log</a>"
     ]
 }
