@@ -18,6 +18,10 @@ window.addEventListener('load', function() {
         req.send();
     })();
 
+    const homeBtn = document.querySelector("#home-btn");
+    
+    homeBtn.addEventListener('click', () => window.location.assign("https://skiotic.github.io"));
+
     const pageMap = new Map();
 
     pageMap.set(
@@ -105,10 +109,6 @@ window.addEventListener('load', function() {
                 break;
             }
         }
-    
-        const homeBtn = document.querySelector("#home-btn");
-    
-        homeBtn.addEventListener('click', () => window.location.assign("https://skiotic.github.io"));
     }
     pageSetup();
     window.addEventListener('hashchange', () => {
