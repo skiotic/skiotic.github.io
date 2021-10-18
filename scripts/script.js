@@ -88,7 +88,13 @@ window.addEventListener('load', function() {
         `.trim()
     );
 
+    let isIndexPage = function() {
+        return window.location.href.endsWith("skiotic.github.io\/") || window.location.href.endsWith("skiotic.github.io\/index.html");
+    }
+
     let pageSetup = function() {
+        if (!isIndexPage()) return;
+
         const prefix = "#content:";
         pageChange = false;
     
@@ -99,8 +105,14 @@ window.addEventListener('load', function() {
         }
 
         const hash = window.location.hash;
-        const content = pageMap.get(hash.substring(prefix.length));
-        if (content && (hash.substring(0, prefix.length - 1) == prefix)) {
+        const hashTitle = hash.substring(prefix.length);
+        const content = pageMap.get(hashTitle);
+
+        if (
+            content && (
+                hash.substring(0, prefix.length) === prefix || (hash === "" && hashTitle === "")
+            )
+        ) {
             insertContent(content);
         }
     }
