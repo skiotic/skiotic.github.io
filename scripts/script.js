@@ -89,7 +89,7 @@ window.addEventListener('load', function() {
     );
 
     let isIndexPage = function() {
-        return window.location.host.endsWith("skiotic.github.io\/") || window.location.host.endsWith("skiotic.github.io\/index.html");
+        return window.location.pathname === "/" || window.location.pathname.endsWith("skiotic.github.io\/index.html");
     }
 
     let pageSetup = function() {
