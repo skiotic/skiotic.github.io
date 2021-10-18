@@ -98,16 +98,10 @@ window.addEventListener('load', function() {
             (callback ?? (() => {}))();
         }
 
-        for (const [hash, content] of pageMap) {
-            if (
-                window.location.hash == (prefix + hash) ||
-                (window.location.hash == "" && hash == "" &&
-                    (window.location.href.endsWith("skiotic.github.io\/") || window.location.href.endsWith("skiotic.github.io\/index.html"))
-                )
-            ) {
-                insertContent(content);
-                break;
-            }
+        const hash = window.location.hash;
+        const content = pageMap.get(hash.substring(prefix.length));
+        if (content && (hash.substring(0, prefix.length - 1) == prefix)) {
+            insertContent(content);
         }
     }
     pageSetup();
