@@ -66,7 +66,7 @@ window.addEventListener('load', function() {
             player.load();
             player.loop = true;
             player.addEventListener('canplaythrough', () => {
-                player.play().catch(() => {
+                player.play().catch(() => {// if autoplaying is disabled
                     const container = document.querySelector('#cont-sometext');
                     const btn = addTempProp('btn', document.createElement('button'));
                     btn.innerHTML = "PLAY THE TUNE.";
@@ -164,6 +164,7 @@ window.addEventListener('load', function() {
     window.addEventListener('hashchange', () => {
         pageChange = true;
         if (tempglobal?.['players']) {
+            // Pauses audio players to be freed up for garbage collection when Audio constructor is deleted
             for (const player of tempglobal['players']) {
                 player.pause();
             }
