@@ -66,8 +66,7 @@ window.addEventListener('load', function() {
             player.load();
             player.loop = true;
             player.addEventListener('canplaythrough', () => {
-                let promise = player.play();
-                if (promise !== undefined) {
+                player.play().catch(() => {
                     const container = document.querySelector('#cont-sometext');
                     const btn = addTempProp('btn', document.createElement('button'));
                     btn.innerHTML = "PLAY THE TUNE.";
@@ -86,7 +85,7 @@ window.addEventListener('load', function() {
                         delete tempglobal['btn'];
                     };
                     container.appendChild(btn);
-                }
+                });
             });
         }]
     );
