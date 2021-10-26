@@ -272,10 +272,10 @@ h1::-moz-selection {
         
         #sidebar {
             border-radius: unset;
-            border-top: 2px solid black;
             width: 100%;
             height: max-content;
-            background-color: transparent;
+            padding-bottom: 3em;
+            background-color: var(--trans1);
             grid-column: 1 / span 1;
             grid-row: 3 / span 1;
         }
