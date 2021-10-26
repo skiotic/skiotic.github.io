@@ -29,6 +29,7 @@ window.addEventListener('load', function() {
             'enumerable': true,
             'value': value
         });
+        return tempglobal[key];
     }
 
     let addAudioPlayer = function(src) {
@@ -56,7 +57,7 @@ window.addEventListener('load', function() {
 
     pageMap.set(
         "sometext",
-        [`<div style="background-color: black; width: 100%; height: 100%; position: relative">
+        [`<div id="cont-sometext" style="background-color: black; width: 100%; height: 100%; position: relative">
             <img style="border: none;" id="some-img" src="./assets/some-text.gif">
             <p id="some-text" style="color: white; font-size: 5em; z-index: 10; position: absolute; top: 160px; left: 30%; transform: rotate(-20deg); max-width: 500px;">Oh. you lose.</p>
         </div>
@@ -65,7 +66,27 @@ window.addEventListener('load', function() {
             player.load();
             player.loop = true;
             player.addEventListener('canplaythrough', () => {
-                player.play();
+                let promise = player.play();
+                if (promise !== undefined) {
+                    const container = document.querySelector('#cont-sometext');
+                    const btn = addTempProp('btn', document.createElement('button'));
+                    btn.innerHTML = "PLAY THE TUNE.";
+                    btn.style.zIndex = "100";
+                    btn.style.position = "absolute";
+                    btn.style.bottom = "30px";
+                    btn.style.width = "250px";
+                    btn.style.height = "80px";
+                    btn.style.fontSize = "35px";
+                    btn.style.left = `${(container.clientWidth / 2) - (parseFloat(btn.style.width) / 2)}px`;
+                    btn.style.color = "#222222";
+                    btn.style.backgroundColor = "#ee4455";
+                    btn.onclick = function() {
+                        player.play();
+                        container.removeChild(btn);
+                        delete tempglobal['btn'];
+                    };
+                    container.appendChild(btn);
+                }
             });
         }]
     );
