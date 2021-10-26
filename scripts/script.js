@@ -1,5 +1,6 @@
-let pageChange;
+let pageChange = false;
 window.addEventListener('load', function() {
+    const tempglobal = {};
     (() => {
         let json;
         const req = new XMLHttpRequest();
@@ -22,11 +23,26 @@ window.addEventListener('load', function() {
     
     homeBtn.addEventListener('click', () => window.location.assign("https://skiotic.github.io"));
 
+    let addTempProp = function(key, value) {
+        Object.defineProperty(tempglobal, key, {
+            'configurable': true,
+            'enumerable': true,
+            'value': value
+        });
+    }
+
+    let addAudioPlayer = function(src) {
+        if (!tempglobal?.['players']) {
+            tempglobal['players'] = [];
+        }
+        return tempglobal['players'][tempglobal['players'].push(new Audio(src)) - 1];
+    }
+
     const pageMap = new Map();
 
     pageMap.set(
         "",
-        `<h2>Hello! This site is under construction. Have some Lorem Ipsum!</h2>
+        [`<h2>Hello! This site is under construction. Have some Lorem Ipsum!</h2>
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Tincidunt id aliquet risus feugiat in ante metus dictum at. Eget sit amet tellus cras adipiscing enim eu turpis. Bibendum ut tristique et egestas. Urna neque viverra justo nec. Odio ut sem nulla pharetra diam sit amet nisl. Justo nec ultrices dui sapien. Ultrices mi tempus imperdiet nulla malesuada pellentesque elit. Mattis vulputate enim nulla aliquet porttitor lacus. Dictumst quisque sagittis purus sit amet volutpat consequat. Faucibus turpis in eu mi bibendum neque egestas congue.
         </p><p>
         Aenean pharetra magna ac placerat vestibulum lectus mauris ultrices. Purus sit amet luctus venenatis lectus magna fringilla. Malesuada pellentesque elit eget gravida cum sociis natoque penatibus et. Nunc sed blandit libero volutpat sed cras ornare arcu. In arcu cursus euismod quis viverra nibh cras pulvinar. Mi tempus imperdiet nulla malesuada pellentesque. Leo in vitae turpis massa sed elementum. Sit amet consectetur adipiscing elit duis tristique sollicitudin nibh sit. Quisque egestas diam in arcu cursus euismod quis viverra nibh. Et malesuada fames ac turpis. Viverra nam libero justo laoreet sit amet. Pharetra massa massa ultricies mi quis hendrerit dolor magna eget.
@@ -35,21 +51,28 @@ window.addEventListener('load', function() {
         </p><p>
         Amet cursus sit amet dictum. Velit euismod in pellentesque massa placerat duis ultricies. Donec massa sapien faucibus et molestie. Morbi tristique senectus et netus. Sit amet est placerat in. Nec ultrices dui sapien eget. Lorem ipsum dolor sit amet consectetur. Nulla aliquet porttitor lacus luctus accumsan tortor posuere ac. Velit euismod in pellentesque massa placerat. Bibendum enim facilisis gravida neque. Vestibulum morbi blandit cursus risus at ultrices. Aenean pharetra magna ac placerat vestibulum lectus.
         </p><p>
-        Vestibulum sed arcu non odio euismod lacinia at quis risus. Quam nulla porttitor massa id. Dui faucibus in ornare quam. Amet risus nullam eget felis eget nunc lobortis mattis. Sit amet nulla facilisi morbi tempus iaculis urna id. Feugiat pretium nibh ipsum consequat nisl vel pretium. Arcu bibendum at varius vel pharetra vel turpis nunc eget. Donec enim diam vulputate ut. Nunc vel risus commodo viverra maecenas. Et odio pellentesque diam volutpat commodo. Ac tincidunt vitae semper quis lectus nulla at volutpat diam.</p>`.trim()
+        Vestibulum sed arcu non odio euismod lacinia at quis risus. Quam nulla porttitor massa id. Dui faucibus in ornare quam. Amet risus nullam eget felis eget nunc lobortis mattis. Sit amet nulla facilisi morbi tempus iaculis urna id. Feugiat pretium nibh ipsum consequat nisl vel pretium. Arcu bibendum at varius vel pharetra vel turpis nunc eget. Donec enim diam vulputate ut. Nunc vel risus commodo viverra maecenas. Et odio pellentesque diam volutpat commodo. Ac tincidunt vitae semper quis lectus nulla at volutpat diam.</p>`.trim()]
     );
 
     pageMap.set(
         "sometext",
-        `<div style="background-color: black; width: 100%; height: 100%; position: relative">
+        [`<div style="background-color: black; width: 100%; height: 100%; position: relative">
             <img style="border: none;" id="some-img" src="./assets/some-text.gif">
             <p id="some-text" style="color: white; font-size: 5em; z-index: 10; position: absolute; top: 160px; left: 30%; transform: rotate(-20deg); max-width: 500px;">Oh. you lose.</p>
         </div>
-        `.trim()
+        `.trim(), () => {
+            let player = addAudioPlayer('./assets/some-text.mp3');
+            player.load();
+            player.loop = true;
+            player.addEventListener('canplaythrough', () => {
+                player.play();
+            });
+        }]
     );
 
     pageMap.set(
         "devlog-1",
-        `<h2>Log Sept-18-2021</h2>
+        [`<h2>Log Sept-18-2021</h2>
         <p>
             Future plans for this site and method of posts:
             <ul style=\"font-family: sans-serif;\">
@@ -58,12 +81,12 @@ window.addEventListener('load', function() {
                 <li>Make the fractal viewer to be mobile-friendly</li>
             </ul>
         </p>
-        `.trim()
+        `.trim()]
     );
 
     pageMap.set(
         "thethe",
-        `the the the the the the the the the the the the the
+        [`the the the the the the the the the the the the the
         the the the the the the the the the the the the the
         the the the the the the the the the the the the the
         the the the the the the the the the the the the the
@@ -85,7 +108,7 @@ window.addEventListener('load', function() {
         the the the the the the the the the the the the the
         the the the the the the the the the the the the the
         the the the the the the the the the the the the the
-        `.trim()
+        `.trim()]
     );
 
     let isIndexPage = function() {
@@ -101,7 +124,8 @@ window.addEventListener('load', function() {
         let insertContent = function(content, callback = null) {
             const contentArea = document.querySelector('#content-body');
             contentArea.innerHTML = content;
-            (callback ?? (() => {}))();
+            tempglobal.callback = callback ?? null;
+            (tempglobal.callback ?? (() => {}))();
         }
 
         const hash = window.location.hash;
@@ -113,12 +137,20 @@ window.addEventListener('load', function() {
                 hash.substring(0, prefix.length) === prefix || (hash === "" && hashTitle === "")
             )
         ) {
-            insertContent(content);
+            insertContent(content[0], content[1] ?? null);
         }
     }
     pageSetup();
     window.addEventListener('hashchange', () => {
         pageChange = true;
+        if (tempglobal?.['players']) {
+            for (const player of tempglobal['players']) {
+                player.pause();
+            }
+        }
+        for (const key in tempglobal) {
+            delete tempglobal[key];
+        }
         pageSetup();
     });
 });
