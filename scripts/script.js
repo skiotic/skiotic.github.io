@@ -150,7 +150,7 @@ window.addEventListener('load', function() {
 
         const hash = window.location.hash;
         const hashTitle = hash.substring(prefix.length);
-        const content = pageMap.get(hashTitle);
+        const content = pageMap.get(hashTitle) ?? pageMap.get("");
 
         if (
             content && (
