@@ -149,8 +149,13 @@ window.addEventListener('load', function() {
         }
 
         const hash = window.location.hash;
-        const hashTitle = hash.substring(prefix.length);
-        const content = pageMap.get(hashTitle) ?? pageMap.get("");
+        let hashTitle = hash.substring(prefix.length);
+        let content = pageMap.get(hashTitle);
+
+        if (content === undefined) {// Defaulting to blank hash if hash in map is undefined
+            content = pageMap.get("");
+            hashTitle = "";
+        }
 
         if (
             content && (
