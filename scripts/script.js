@@ -148,13 +148,14 @@ window.addEventListener('load', function() {
             (tempglobal.callback ?? (() => {}))();
         }
 
-        const hash = window.location.hash;
+        let hash = window.location.hash;
         let hashTitle = hash.substring(prefix.length);
         let content = pageMap.get(hashTitle);
 
         if (content === undefined) {// Defaulting to blank hash if hash in map is undefined
             content = pageMap.get("");
             hashTitle = "";
+            hash = "";
         }
 
         if (
