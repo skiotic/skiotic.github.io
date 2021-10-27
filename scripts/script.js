@@ -69,13 +69,13 @@ window.addEventListener('load', function() {
                 player.play().catch(() => {// if autoplaying is disabled
                     const container = document.querySelector('#cont-sometext');
                     const btn = addTempProp('btn', document.createElement('button'));
-                    btn.innerHTML = "PLAY THE TUNE.";
+                    btn.innerHTML = "CLICK TO PLAY THE TUNE.";
                     btn.style.zIndex = "100";
                     btn.style.position = "absolute";
                     btn.style.bottom = "30px";
                     btn.style.width = "250px";
                     btn.style.height = "80px";
-                    btn.style.fontSize = "35px";
+                    btn.style.fontSize = "22px";
                     btn.style.left = `${(container.clientWidth / 2) - (parseFloat(btn.style.width) / 2)}px`;
                     btn.style.color = "#222222";
                     btn.style.backgroundColor = "#ee4455";
