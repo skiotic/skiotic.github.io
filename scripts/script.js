@@ -32,9 +32,15 @@ window.addEventListener('load', function() {
         return tempglobal[key];
     }
 
+    let deleteTempProp = function(key) {
+        let value = new Object(tempglobal[value]);
+        delete tempglobal[key];
+        return value;
+    }
+
     let addAudioPlayer = function(src) {
         if (!tempglobal?.['players']) {
-            tempglobal['players'] = [];
+            addTempProp('players', []);
         }
         return tempglobal['players'][tempglobal['players'].push(new Audio(src)) - 1];
     }
@@ -82,7 +88,7 @@ window.addEventListener('load', function() {
                     btn.onclick = function() {
                         player.play();
                         container.removeChild(btn);
-                        delete tempglobal['btn'];
+                        deleteTempProp('btn');
                     };
                     container.appendChild(btn);
                 });
@@ -128,6 +134,14 @@ window.addEventListener('load', function() {
         the the the the the the the the the the the the the
         the the the the the the the the the the the the the
         the the the the the the the the the the the the the
+        `.trim()]
+    );
+
+    pageMap.set(
+        "zharka",
+        [`<h2>Information About Źārkā Conlang</h2>
+        <p>IPA Charset: &#0060;æ, b, ʒ, d, e, f, g, h, i, k, l, m, n, o, p, r, ɚ, s, t, v, w, y, z, ɑ, ɪ, ə, ʊ, ʏ, ð, θ, ʃ, tʃ, ŋ, χ&#0062;</p>
+        <p>Latin-based Orthography: &#0060;a, b, ź, d, e, f, g, h, k, l, m, n, o, p, r, ë, s, t, v, w, y, z, ā, ē, u, ú, ü, ð, þ, ş, c, ŋ, x&#0062;</p>
         `.trim()]
     );
 
