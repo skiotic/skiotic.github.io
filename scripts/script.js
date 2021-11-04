@@ -140,8 +140,10 @@ window.addEventListener('load', function() {
     pageMap.set(
         "zharka",
         [`<h2>Information About Źārkā Conlang</h2>
-        <p>IPA Charset: &#0060;æ, b, ʒ, d, e, f, g, h, i, k, l, m, n, o, p, r, ɚ, s, t, v, w, y, z, ɑ, ɪ, ə, ʊ, ʏ, ð, θ, ʃ, tʃ, ŋ, χ&#0062;</p>
-        <p>Latin-based Orthography: &#0060;a, b, ź, d, e, f, g, h, k, l, m, n, o, p, r, ë, s, t, v, w, y, z, ā, ē, u, ú, ü, ð, þ, ş, c, ŋ, x&#0062;</p>
+        <p>IPA Charset: &#0060;æ, b, ʒ, d, e, f, g, h, i, k, l, m, n, o, p, r, ɚ, s, t, v, w, y, z, ɑ, ɪ, ə, ʊ, ʏ, θ, ð, ʃ, tʃ, ŋ, χ&#0062;</p>
+        <p>Latin-based Orthography: &#0060;a, b, ź, d, e, f, g, h, k, l, m, n, o, p, r, ë, s, t, v, w, y, z, ā, ē, u, ú, ü, þ, ð, ş, c, ŋ, x&#0062;</p>
+        <p>Written Script:</p>
+        <img src=\"./assets/alebazana.png\">
         `.trim()]
     );
 
