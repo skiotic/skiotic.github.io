@@ -160,8 +160,8 @@ window.addEventListener('load', function() {
         let insertContent = function(content, callback = null) {
             const contentArea = document.querySelector('#content-body');
             contentArea.innerHTML = content;
-            tempglobal.callback = callback ?? null;
-            (tempglobal.callback ?? (() => {}))();
+            tempglobal.callback = callback ?? (() => {});
+            tempglobal.callback();
         }
 
         let hash = window.location.hash;
