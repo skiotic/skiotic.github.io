@@ -218,8 +218,9 @@
             function clearInput() {
               timeInput.value = null;
               labelInput.value = null;
-              countdownInputElem.style.display = 'none';
               addCountdownBtn.style.display = 'block';
+              countdownCont.style.display = 'block';
+              countdownInputElem.style.display = 'none';
             }
             exitBtn.addEventListener('click', clearInput);
             countdownConfirm.addEventListener('click', () => {
