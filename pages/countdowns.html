@@ -192,12 +192,17 @@
           const countdownInputElem = document.createElement('div');
           countdownInputElem.style.display = 'none';
           countdownInputElem.style.flexDirection = 'column';
+          countdownInputElem.style.margin = '30px auto';
+          countdownInputElem.style.width = '40%';
+          countdownInputElem.style.padding = '5px 25px 25px 25px';
+          countdownInputElem.style.border = '2px solid #888888';
+          countdownInputElem.style.borderRadius = '7px';
           countdownInputElem.innerHTML += `
-          <span>
+          <span style="text-align: left; margin: 20px 0 30px 0;">
             <label>Name: </label><input id="main-label-input"></input>
-            <button id="input-exit-btn" style="color: black;">x</button>
+            <button id="input-exit-btn" style="color: black; float: right;">x</button>
           </span>
-          <span><label>Insert unix timestamp (in seconds) here:</label><input id="time-add"></input></span>
+          <span style="text-align: left; margin-bottom: 30px;"><label>Insert unix timestamp (in seconds) here: </label><input id="time-add"></input></span>
           <button id="countdown-confirm" style="color:black; width: 12em; margin: 0 auto;">Add new countdown</button>
           `.trim();
 
@@ -258,6 +263,10 @@
         background-color: #00000077;
       }
 
+      #add-countdown:focus {
+        outline: 3px dashed red;
+      }
+
       #add-countdown > p {
         width: fit-content;
         margin: 45px auto 0 auto;
@@ -290,7 +299,7 @@
         <h1 title="Skiotic">SKIOTIC</h1>
       </header>
       <article id="content-body">
-        <div id="add-countdown">
+        <div id="add-countdown" tabindex="0">
           <p>+ Add new countdown</p>
         </div>
         <div id="countdown-cont"></div>
