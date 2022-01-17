@@ -145,6 +145,7 @@
           const addCountdownBtn = document.querySelector('#add-countdown');
           const countdownCont = document.querySelector('#countdown-cont');
           const contentBody = document.querySelector('#content-body');
+
           function newCountdown(index) {
             const countdownObj = countdowns[index];
             const countdownInterface = document.createElement('div');
@@ -153,8 +154,19 @@
             countdownInterface.style.borderRadius = '3px';
             countdownInterface.style.width = '75%';
             countdownInterface.style.margin = '10px auto';
-            countdownInterface.innerHTML += `<p style="overflow: auto; margin: 10px 0 0 0; font-size: 23px; font-weight: 600;">${countdownObj.label}</p>`;
+            countdownInterface.innerHTML += `<p style="overflow: auto; margin: 10px 0 0 0; font-size: 23px; font-weight: 600;">${countdownObj.label}<button id="delete-counter-${index}" style="color: black; float: right;">x</button></p>`;
             countdownInterface.innerHTML += `<p id="count-${index}" class="count-formatted">${countdownObj.countdownInstance.getFormattedTime()}</p>`;
+
+            const deleteBtn = countdownInterface.querySelector(`#delete-counter-${index}`);
+            deleteBtn.addEventListener('click', () => {
+              const willDelete = window.confirm('Are you sure about deleting this button?');
+              if (!willDelete) return;
+
+              countdowns.splice(index, 1);
+              countdownCont.removeChild(countdownInterface);
+              saveCountdowns();
+              newInterval();
+            });
             countdownCont.appendChild(countdownInterface);
           }
           function newInterval() {
@@ -196,7 +208,9 @@
               labelInput.value = null;
               countdownInputElem.style.display = 'none';
               addCountdownBtn.style.display = 'block';
-              countdownCont.style.display = 'block';
+              if (countdowns.length > 0) {
+                countdownCont.style.display = 'block';
+              }
             }
             exitBtn.addEventListener('click', clearInput);
             countdownConfirm.addEventListener('click', () => {
