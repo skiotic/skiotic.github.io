@@ -172,7 +172,9 @@
           function newInterval() {
             if (curInterval !== null) clearInterval(curInterval);
             const countdownContChildren = document.querySelectorAll('#countdown-cont > *');
-            countdownCont.style.display = 'block';
+            if (countdowns.length > 0) {
+              countdownCont.style.display = 'block';
+            }
 
             curInterval = setInterval(() => {
               for (const elem of countdownContChildren) {
@@ -208,9 +210,6 @@
               labelInput.value = null;
               countdownInputElem.style.display = 'none';
               addCountdownBtn.style.display = 'block';
-              if (countdowns.length > 0) {
-                countdownCont.style.display = 'block';
-              }
             }
             exitBtn.addEventListener('click', clearInput);
             countdownConfirm.addEventListener('click', () => {
