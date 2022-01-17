@@ -18,18 +18,18 @@
         const countdowns = [];
 
         class CountdownUtil {
-          constructor(timestamp, timeLabels) {
+          constructor(timestampSecs, timeLabels) {
             Object.defineProperty(this, 'T_COUNTDOWN', {
               enumerable: false,
               writable: false,
-              value: timestamp
+              value: Math.trunc(timestampSecs)
             });
             this.timeLabels = timeLabels;
           }
 
           curRelativeTimeInSecs() {
-            const curTime = (new Date()).getTime();
-            return Math.trunc((this.T_COUNTDOWN-curTime)/1000);
+            const curTime = Math.trunc(new Date().getTime()/1000);
+            return this.T_COUNTDOWN-curTime;
           }
 
           getFormattedTime(t = this.curRelativeTimeInSecs()) {
@@ -197,7 +197,7 @@
             <label>Name: </label><input id="main-label-input"></input>
             <button id="input-exit-btn" style="color: black;">x</button>
           </span>
-          <span><label>Insert unix timestamp (in milliseconds) here:</label><input id="time-add"></input></span>
+          <span><label>Insert unix timestamp (in seconds) here:</label><input id="time-add"></input></span>
           <button id="countdown-confirm" style="color:black; width: 12em; margin: 0 auto;">Add new countdown</button>
           `.trim();
 
