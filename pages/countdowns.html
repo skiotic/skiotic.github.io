@@ -76,7 +76,7 @@
 
         function getCountdowns() {
           const countdownValue = localStorage.getItem('countdowns');
-          if (countdownValue === null) return;
+          if (countdownValue == null || countdownValue == '') return;
           const countdownValueArr = countdownValue.split('%');
 
           for (const key of countdownValueArr) {
@@ -110,7 +110,10 @@
           }[]
         */
         function saveCountdowns() {
-          if (countdowns.length < 1) return;
+          if (countdowns.length < 1) {
+            localStorage.setItem('countdowns', '');
+            return;
+          };
           const keyArr = [];
           function sanitize(str) {
             str = str.replace(/\*/g, '&#42;');
@@ -162,8 +165,8 @@
               const willDelete = window.confirm('Are you sure about deleting this button?');
               if (!willDelete) return;
 
-              countdowns.splice(index, 1);
               countdownCont.removeChild(countdownInterface);
+              countdowns.splice(index, 1);
               saveCountdowns();
               newInterval();
             });
