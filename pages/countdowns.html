@@ -162,7 +162,7 @@
 
             const deleteBtn = countdownInterface.querySelector(`#delete-counter-${index}`);
             deleteBtn.addEventListener('click', () => {
-              const willDelete = window.confirm('Are you sure about deleting this button?');
+              const willDelete = window.confirm('Are you sure about deleting this countdown?');
               if (!willDelete) return;
 
               countdownCont.removeChild(countdownInterface);
