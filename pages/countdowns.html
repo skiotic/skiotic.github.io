@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Countdowns | Skiotic</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Keep a list of countdowns here">
+    <meta name="keywords" content="skiotic">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <script type="text/javascript" src="../scripts/script.js"></script>
+    <link rel="stylesheet" type="text/css" href="../styles/main-style.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto+Slab&display=swap">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@1,400;1,700&display=swap">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap">
+    <script type="text/javascript">
+      window.addEventListener("load", function() {
+        const countdowns = [];
+
+        class CountdownUtil {
+          constructor(timestamp, timeLabels) {
+            Object.defineProperty(this, 'T_COUNTDOWN', {
+              enumerable: false,
+              writable: false,
+              value: timestamp
+            });
+            this.timeLabels = timeLabels;
+          }
+
+          curRelativeTimeInSecs() {
+            const curTime = (new Date()).getTime();
+            return Math.trunc((this.T_COUNTDOWN-curTime)/1000);
+          }
+
+          getFormattedTime(t = this.curRelativeTimeInSecs()) {
+            let isPast = false;
+            function plur(n, obj) {
+              const isArray = Array.isArray(obj.label);
+              return n != 1
+                ? (isArray ? obj.label[1] : 's')
+                : (isArray ? obj.label[0] : '');
+            }
+            const timeFormat = (num) => {
+              if (num < 0) {
+                isPast = true;
+                num = -num;
+              }
+              const digits = new Array(this.timeLabels.length-1);
+              for (let i = 0; i < digits.length; i++) {
+                digits[i] = (num % this.timeLabels[i].radix);
+                num = Math.floor(num / this.timeLabels[i].radix);
+              }
+              digits.push(num);
+              return digits;
+            }
+            const f = timeFormat(t);
+            let finalStr = '';
+            for (let i = this.timeLabels.length-1; i >= 0; i--) {
+              let timeLabel = this.timeLabels[i].label;
+              timeLabel = Array.isArray(timeLabel) ? '' : timeLabel;
+              const p = plur(f[i], this.timeLabels[i]);
+              finalStr += `<span style="text-align: center">${f[i]} ${timeLabel + p} ${i == 0 && isPast ? 'ago' : ''}</span>`;
+            }
+            return finalStr;
+          }
+        }
+
+        function defaultTimeLables() {
+          return [
+            {"label":"second","radix":60},
+            {"label":"minute","radix":60},
+            {"label":"hour","radix":24},
+            {"label":"day"}
+          ];
+        }
+
+        function getCountdowns() {
+          const countdownValue = localStorage.getItem('countdowns');
+          if (countdownValue === null) return;
+          const countdownValueArr = countdownValue.split('%');
+
+          for (const key of countdownValueArr) {
+            const [label, timestamp, timeLabelsJSON] = key.split('*');
+            const countdownObj = {
+              label: label,
+              timestamp: parseInt(timestamp),
+              labels: []
+            };
+            for (const objStr of timeLabelsJSON.split('|')) {
+              countdownObj.labels.push(JSON.parse(objStr));
+            }
+            countdownObj.countdownInstance = new CountdownUtil(
+              countdownObj.timestamp,
+              countdownObj.labels
+            );
+            countdowns.push(countdownObj);
+          }
+          return countdowns;
+        }
+
+        /*
+          countdowns: {
+            label: string,
+            timestamp: number,
+            labels: {
+              label: string | string[],
+              radix: number,
+            }[]
+            countdownInstance: CountdownUtil
+          }[]
+        */
+        function saveCountdowns() {
+          if (countdowns.length < 1) return;
+          const keyArr = [];
+          function sanitize(str) {
+            str = str.replace(/\*/g, '&#42;');
+            str = str.replace(/\|/g, '&#124;');
+            str = str.replace(/%/g, '&#37;');
+            return str;
+          }
+          for (const countdown of countdowns) {
+            const mainLabel = sanitize(countdown.label);
+            const labelObjArr = [];
+            for (let i = 0; i < countdown.labels.length; i++) {
+              if (Array.isArray(countdown.labels[i].label)) {
+                for (let j = 0; j < countdown.labels[i].label.length; j++) {
+                  countdown.labels[i].label[j] = sanitize(countdown.labels[i].label[j]);
+                }
+              } else {
+                countdown.labels[i].label = sanitize(countdown.labels[i].label);
+              }
+              labelObjArr.push(JSON.stringify(countdown.labels[i]));
+            }
+            keyArr.push(`${mainLabel}*${countdown.timestamp}*${labelObjArr.join('|')}`);
+          }
+          const keyStr = keyArr.join('%');
+          localStorage.setItem('countdowns', keyStr);
+          //countdowns: countdownName*timestamp*{}|{}|{}|{}%countdownName*timestamp*{}|{}|{}|{}
+          return keyStr;
+        }
+
+        function main() {
+          getCountdowns();
+          let curInterval = null;
+          const addCountdownBtn = document.querySelector('#add-countdown');
+          const countdownCont = document.querySelector('#countdown-cont');
+          const contentBody = document.querySelector('#content-body');
+          function newCountdown(index) {
+            const countdownObj = countdowns[index];
+            const countdownInterface = document.createElement('div');
+            countdownInterface.id = `countdown-clock-${index}`;
+            countdownInterface.style.border = '3px solid black';
+            countdownInterface.style.borderRadius = '3px';
+            countdownInterface.style.width = '75%';
+            countdownInterface.style.margin = '10px auto';
+            countdownInterface.innerHTML += `<p style="overflow: auto; margin: 10px 0 0 0; font-size: 23px; font-weight: 600;">${countdownObj.label}</p>`;
+            countdownInterface.innerHTML += `<p id="count-${index}" class="count-formatted">${countdownObj.countdownInstance.getFormattedTime()}</p>`;
+            countdownCont.appendChild(countdownInterface);
+          }
+          function newInterval() {
+            if (curInterval !== null) clearInterval(curInterval);
+            const countdownContChildren = document.querySelectorAll('#countdown-cont > *');
+            countdownCont.style.display = 'block';
+
+            curInterval = setInterval(() => {
+              for (const elem of countdownContChildren) {
+                const id = parseInt(elem.id.slice(16));
+                const timeElem = elem.querySelector(`#count-${id}`);
+                timeElem.innerHTML = countdowns[id].countdownInstance.getFormattedTime();
+              }
+            }, 1000);
+          }
+          const countdownInputElem = document.createElement('div');
+          countdownInputElem.style.display = 'none';
+          countdownInputElem.style.flexDirection = 'column';
+          countdownInputElem.innerHTML += `
+          <span>
+            <label>Name: </label><input id="main-label-input"></input>
+            <button id="input-exit-btn" style="color: black;">x</button>
+          </span>
+          <span><label>Insert unix timestamp here:</label><input id="time-add"></input></span>
+          <span id="countdown-confirm"><div style="margin-left: 30px">Add new countdown</span>
+          `.trim();
+
+          function countdownInput() {
+            addCountdownBtn.style.display = 'none';
+            countdownCont.style.display = 'none';
+            countdownInputElem.style.display = 'flex';
+            const exitBtn = countdownInputElem.querySelector('#input-exit-btn');
+            const labelInput = countdownInputElem.querySelector('#main-label-input');
+            const timeInput = countdownInputElem.querySelector('#time-add');
+            const countdownConfirm = countdownInputElem.querySelector('#countdown-confirm');
+
+            function clearInput() {
+              timeInput.value = null;
+              labelInput.value = null;
+              countdownInputElem.style.display = 'none';
+              addCountdownBtn.style.display = 'block';
+              countdownCont.style.display = 'block';
+            }
+            exitBtn.addEventListener('click', clearInput);
+            countdownConfirm.addEventListener('click', () => {
+              const timestamp = parseInt(timeInput.value);
+              if (isNaN(timestamp)) return;
+
+              const timeLabelArr = defaultTimeLables();
+
+              const countdownObj = {
+                label: labelInput.value,
+                timestamp: timestamp,
+                labels: timeLabelArr,
+                countdownInstance: new CountdownUtil(timestamp, timeLabelArr)
+              };
+              newCountdown(countdowns.push(countdownObj)-1);
+              clearInput();
+              saveCountdowns();
+              newInterval();
+            });
+          }
+          contentBody.appendChild(countdownInputElem);
+          for (let i = 0; i < countdowns.length; i++) newCountdown(i);
+          addCountdownBtn.addEventListener('click', countdownInput);
+          if (countdowns.length > 0) newInterval();
+        }
+        main();
+      });
+    </script>
+    <style>
+      #add-countdown {
+        width: 90%;
+        height: 150px;
+        border: 4px dashed var(--text);
+        border-radius: 0;
+        margin: 20px auto 10px auto;
+        background-color: #00000015;
+      }
+
+      #add-countdown:active {
+        margin-top: 15px;
+        background-color: #00000077;
+      }
+
+      #add-countdown > p {
+        width: fit-content;
+        margin: 45px auto 0 auto;
+        font-size: 40px;
+        font-weight: 500;
+        user-select: none;
+      }
+
+      #countdown-cont {
+        display: none;
+        border: 3px solid black;
+        width: 90%;
+        margin: 0 auto;
+        height: fit-content;
+      }
+
+      .count-formatted {
+        font-family: sans-serif !important;
+        font-size: 30px;
+        text-align: center;
+        margin-top: 35px;
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="main-grid">
+      <header id="header">
+        <h1 title="Skiotic">SKIOTIC</h1>
+      </header>
+      <article id="content-body">
+        <div id="add-countdown">
+          <p>+ Add new countdown</p>
+        </div>
+        <div id="countdown-cont"></div>
+      </article>
+      <aside id="sidebar">
+        <h3>PAGES--</h3>
+        <p id="sidebar-text"></p>
+      </aside>
+    </main>
+    <div id="footer-wrapper">
+      <footer id="footer-bar">
+        <button type="button" class="footer-link" id="home-btn" title="Home">Home</button>
+        <button type="button" class="footer-link" id="about-btn" title="About">About</button>
+      </footer>
+    </div>
+  </body>
+</html>
