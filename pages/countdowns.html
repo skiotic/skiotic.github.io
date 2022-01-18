@@ -118,7 +118,6 @@
           return str;
         }
 
-        // ! CURRENTLY NOT DECODING CORRECTLY!
         function getCountdowns() {
           const countdownValue = localStorage.getItem('countdowns');
           if (countdownValue === null || countdownValue === '') return;
@@ -191,13 +190,14 @@
               labelObjInfo = [];
               for (let i = 0; i < countdown.labels.length; i++) {
                 if (Array.isArray(countdown.labels[i].label)) {
-                  for (let j = 0; j < countdown.labels[i].label.length; j++) {
-                    countdown.labels[i].label[j] = countdown.labels[i].label[j];
-                  }
+                  labelObjInfo.push(`~${
+                    countdown.labels[i].label[0]
+                  }${
+                    countdown.labels[i].label[1]
+                  }:${countdown.labels[i].radix}`);
                 } else {
-                  countdown.labels[i].label = countdown.labels[i].label;
+                  labelObjInfo.push(`${countdown.labels[i].label}:${countdown.labels[i].radix}`);
                 }
-                labelObjInfo.push(JSON.stringify(countdown.labels[i]));
               }
             } else {
               labelObjInfo = `<${countdown.labels}>`;
