@@ -107,6 +107,17 @@
           }
         }
 
+        function sanitize(str) {
+          str = str.replace(/,/g, '&#44;');
+          str = str.replace(/~/g, '&#126;');
+          str = str.replace(/</g, '&#60;');
+          str = str.replace(/>/g, '&#62;');
+          str = str.replace(/\*/g, '&#42;');
+          str = str.replace(/\|/g, '&#124;');
+          str = str.replace(/%/g, '&#37;');
+          return str;
+        }
+
         // ! CURRENTLY NOT DECODING CORRECTLY!
         function getCountdowns() {
           const countdownValue = localStorage.getItem('countdowns');
@@ -121,7 +132,7 @@
               labels: []
             };
 
-            const checkForEnum = timeLabelsStr.match(/(?:<)([^<>]+)(?:>)/);
+            const checkForEnum = timeLabelsStr.match(/^(?:<)([^<>]+)(?:>)$/);
             let labelsArr = null;
             if (checkForEnum) {
               countdownObj.labels = checkForEnum[1];
@@ -132,22 +143,25 @@
                 let resultObj = {};
                 if (objStr.startsWith('~')) {
                   const tempObjArr = objStr.slice(1).split(':');
-                  resultObj['label'] = tempObjArr[0].split(',');
-                  resultObj['radix'] = tempObjArr[1]
+                  const tempLabelArr = tempObjArr[0].split(',');
+                  tempLabelArr[0] = sanitize(tempLabelArr[0]);
+                  tempLabelArr[1] = sanitize(tempLabelArr[1]);
 
+                  resultObj['label'] = tempLabelArr;
+                  resultObj['radix'] = sanitize(tempObjArr[1]);
                 } else {
                   const tempObjArr = objStr.split(':');
-                  resultObj['label'] = tempObjArr[0];
-                  resultObj['radix'] = tempObjArr[1];
+                  resultObj['label'] = sanitize(tempObjArr[0]);
+                  resultObj['radix'] = sanitize(tempObjArr[1]);
                 }
                 countdownObj.labels.push(resultObj);
               }
             }
-
             countdownObj.countdownInstance = new CountdownUtil(
               countdownObj.timestamp,
               (labelsArr ?? countdownObj.labels)
             );
+            countdownObj.label = sanitize(countdownObj.label);
             countdowns.push(countdownObj);
           }
           return countdowns;
@@ -267,17 +281,6 @@
           </span>
           <button id="countdown-confirm" style="color:black; width: 12em; margin: 0 auto;">Add new countdown</button>
           `.trim();
-
-          function sanitize(str) {
-            str = str.replace(/,/g, '&#44;');
-            str = str.replace(/~/g, '&#126;');
-            str = str.replace(/</g, '&#60;');
-            str = str.replace(/>/g, '&#62;');
-            str = str.replace(/\*/g, '&#42;');
-            str = str.replace(/\|/g, '&#124;');
-            str = str.replace(/%/g, '&#37;');
-            return str;
-          }
 
           function countdownInput() {
             addCountdownBtn.style.display = 'none';
