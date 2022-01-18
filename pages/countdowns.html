@@ -195,7 +195,7 @@
           countdownInputElem.style.margin = '30px auto';
           countdownInputElem.style.width = '40%';
           countdownInputElem.style.padding = '5px 25px 25px 25px';
-          countdownInputElem.style.border = '2px solid #888888';
+          countdownInputElem.style.backgroundColor = '#bbbbbb88';
           countdownInputElem.style.borderRadius = '7px';
           countdownInputElem.innerHTML += `
           <span style="text-align: left; margin: 20px 0 30px 0;">
@@ -219,7 +219,6 @@
               timeInput.value = null;
               labelInput.value = null;
               addCountdownBtn.style.display = 'block';
-              countdownCont.style.display = 'block';
               countdownInputElem.style.display = 'none';
             }
             exitBtn.addEventListener('click', clearInput);
