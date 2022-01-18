@@ -116,6 +116,8 @@
           };
           const keyArr = [];
           function sanitize(str) {
+            str = str.replace(/</g, '&#60;');
+            str = str.replace(/>/g, '&#62;');
             str = str.replace(/\*/g, '&#42;');
             str = str.replace(/\|/g, '&#124;');
             str = str.replace(/%/g, '&#37;');
