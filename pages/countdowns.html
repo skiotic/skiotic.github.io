@@ -14,8 +14,51 @@
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@1,400;1,700&display=swap">
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap">
     <script type="text/javascript">
-      window.addEventListener("load", function() {
+      let getCountdowns = null;
+      window.addEventListener("load", () => {
         const countdowns = [];
+
+        function makeEnum(...props) {
+          const e = {};
+          for (let i = 0; i < props.length; i++) {
+            e[e[props[i]] = i] = props[i];
+          }
+          return e;
+        }
+        const commonLabelsEnum = makeEnum(
+          'S',     // seconds
+          'SM',    // seconds, minutes
+          'SMH',   // seconds, minutes, hours
+          'SMHD',  // seconds, minutes, hours, days
+          'SMHDY', // seconds, minutes, hours, days, years
+        );
+        const commonLabelsObjects = [
+          [
+            {"label":"second"}
+          ],
+          [
+            {"label":"second","radix":60},
+            {"label":"minute"}
+          ],
+          [
+            {"label":"second","radix":60},
+            {"label":"minute","radix":60},
+            {"label":"hour"}
+          ],
+          [
+            {"label":"second","radix":60},
+            {"label":"minute","radix":60},
+            {"label":"hour","radix":24},
+            {"label":"day"}
+          ],
+          [
+            {"label":"second","radix":60},
+            {"label":"minute","radix":60},
+            {"label":"hour","radix":24},
+            {"label":"day","radix":365},
+            {"label":"year"}
+          ]
+        ];
 
         class CountdownUtil {
           constructor(timestampSecs, timeLabels) {
@@ -65,33 +108,31 @@
           }
         }
 
-        function defaultTimeLables() {
-          return [
-            {"label":"second","radix":60},
-            {"label":"minute","radix":60},
-            {"label":"hour","radix":24},
-            {"label":"day"}
-          ];
-        }
-
+        // ! CURRENTLY NOT DECODING CORRECTLY!
         function getCountdowns() {
           const countdownValue = localStorage.getItem('countdowns');
           if (countdownValue == null || countdownValue == '') return;
           const countdownValueArr = countdownValue.split('%');
 
           for (const key of countdownValueArr) {
-            const [label, timestamp, timeLabelsJSON] = key.split('*');
+            const [label, timestamp, timeLabelsStr] = key.split('*');
             const countdownObj = {
               label: label,
               timestamp: parseInt(timestamp),
-              labels: []
+              labels: null
             };
-            for (const objStr of timeLabelsJSON.split('|')) {
-              countdownObj.labels.push(JSON.parse(objStr));
+            const checkForEnum = timeLabelsStr.match(/(?:<)([^<>]+)(?:>)/);
+            if (checkForEnum) {
+              countdownObj.labels = checkForEnum[1];
+            } else {
+              // TODO: Make this handle custom time unit labels
+              // for (const objStr of timeLabelsStr.split('|')) {
+              //   countdownObj.labels.push(JSON.parse(objStr));
+              // }
             }
             countdownObj.countdownInstance = new CountdownUtil(
               countdownObj.timestamp,
-              countdownObj.labels
+              commonLabelsObjects[commonLabelsEnum[countdownObj.labels]]
             );
             countdowns.push(countdownObj);
           }
@@ -105,10 +146,11 @@
             labels: {
               label: string | string[],
               radix: number,
-            }[]
+            }[] | string
             countdownInstance: CountdownUtil
           }[]
         */
+       // ! CURRENTLY NOT ENCODING CORRECTLY!
         function saveCountdowns() {
           if (countdowns.length === 0) {
             localStorage.setItem('countdowns', '');
@@ -117,26 +159,32 @@
           const keyArr = [];
           for (const countdown of countdowns) {
             const mainLabel = countdown.label;
-            const labelObjArr = [];
-            for (let i = 0; i < countdown.labels.length; i++) {
-              if (Array.isArray(countdown.labels[i].label)) {
-                for (let j = 0; j < countdown.labels[i].label.length; j++) {
-                  countdown.labels[i].label[j] = countdown.labels[i].label[j];
+            let labelObjInfo = null;
+            if (Array.isArray(countdown.labels)) {
+              labelObjInfo = [];
+              for (let i = 0; i < countdown.labels.length; i++) {
+                if (Array.isArray(countdown.labels[i].label)) {
+                  for (let j = 0; j < countdown.labels[i].label.length; j++) {
+                    countdown.labels[i].label[j] = countdown.labels[i].label[j];
+                  }
+                } else {
+                  countdown.labels[i].label = countdown.labels[i].label;
                 }
-              } else {
-                countdown.labels[i].label = countdown.labels[i].label;
+                labelObjInfo.push(JSON.stringify(countdown.labels[i]));
               }
-              labelObjArr.push(JSON.stringify(countdown.labels[i]));
+            } else {
+              labelObjInfo = `<${countdown.labels}>`;
             }
-            keyArr.push(`${mainLabel}*${countdown.timestamp}*${labelObjArr.join('|')}`);
+            keyArr.push(`${mainLabel}*${countdown.timestamp}*${labelObjInfo.join?.('|') ?? labelObjInfo}`);
           }
           const keyStr = keyArr.join('%');
           localStorage.setItem('countdowns', keyStr);
-          //countdowns: countdownName*timestamp*{}|{}|{}|{}%countdownName*timestamp*{}|{}|{}|{}
+          //TODO: countdownName*timestamp*second:60|[minute,minutes]:60%countdownName*timestamp*<SM>
           return keyStr;
         }
 
         function main() {
+          getCountdowns = () => countdowns;
           getCountdowns();
           let curInterval = null;
           const addCountdownBtn = document.querySelector('#add-countdown');
@@ -146,21 +194,21 @@
           function newCountdown(index) {
             const countdownObj = countdowns[index];
             const countdownInterface = document.createElement('div');
-            countdownInterface.id = `countdown-clock-${index}`;
             countdownInterface.style.border = '3px solid black';
             countdownInterface.style.borderRadius = '3px';
             countdownInterface.style.width = '75%';
             countdownInterface.style.margin = '10px auto';
-            countdownInterface.innerHTML += `<p style="overflow: auto; margin: 10px 0 0 0; font-size: 23px; font-weight: 600;">${countdownObj.label}<button id="delete-counter-${index}" style="color: black; float: right;">x</button></p>`;
-            countdownInterface.innerHTML += `<p id="count-${index}" class="count-formatted">${countdownObj.countdownInstance.getFormattedTime()}</p>`;
+            countdownInterface.innerHTML += `<p style="overflow: auto; margin: 10px 0 0 0; font-size: 23px; font-weight: 600;">${countdownObj.label}<button class="delete-counter" style="color: black; float: right;">x</button></p>`;
+            countdownInterface.innerHTML += `<p class="count-formatted">${countdownObj.countdownInstance.getFormattedTime()}</p>`;
 
-            const deleteBtn = countdownInterface.querySelector(`#delete-counter-${index}`);
+            const deleteBtn = countdownInterface.querySelector('.delete-counter');
             deleteBtn.addEventListener('click', () => {
               const willDelete = window.confirm('Are you sure about deleting this countdown?');
               if (!willDelete) return;
 
               countdownCont.removeChild(countdownInterface);
               countdowns.splice(index, 1);
+              console.log(countdowns); // debug
               saveCountdowns();
               newInterval();
             });
@@ -169,17 +217,16 @@
           function newInterval() {
             if (curInterval !== null) clearInterval(curInterval);
             const countdownContChildren = document.querySelectorAll('#countdown-cont > *');
-            if (countdowns.length === 0) {
+            if (countdowns.length === 0 || countdownContChildren.length === 0) {
               countdownCont.style.display = 'none';
               return;
             }
             countdownCont.style.display = 'block';
 
             curInterval = setInterval(() => {
-              for (const elem of countdownContChildren) {
-                const id = parseInt(elem.id.slice(16));
-                const timeElem = elem.querySelector(`#count-${id}`);
-                timeElem.innerHTML = countdowns[id].countdownInstance.getFormattedTime();
+              for (let i = 0; i < countdownContChildren.length; i++) {
+                const timeElem = countdownContChildren[i].querySelector('.count-formatted');
+                timeElem.innerHTML = countdowns[i].countdownInstance.getFormattedTime();
               }
             }, 1000);
           }
@@ -192,11 +239,21 @@
           countdownInputElem.style.backgroundColor = '#bbbbbb88';
           countdownInputElem.style.borderRadius = '7px';
           countdownInputElem.innerHTML += `
-          <span style="text-align: left; margin: 20px 0 30px 0;">
+          <span style="text-align: left; margin: 20px 0 25px 0;">
             <label>Name: </label><input id="main-label-input"></input>
             <button id="input-exit-btn" style="color: black; float: right;">x</button>
           </span>
-          <span style="text-align: left; margin-bottom: 30px;"><label>Insert unix timestamp (in seconds) here: </label><input id="time-add"></input></span>
+          <span style="text-align: left; margin-bottom: 25px;"><label>Insert unix timestamp (in seconds) here: </label><input id="time-add"></input></span>
+          <span style="text-align: left; margin-bottom: 25px;">
+            <label>Time units: </label>
+            <select id="unit-selection">
+              <option value="S">Seconds</option>
+              <option value="SM">Seconds, Minutes</option>
+              <option value="SMH">Seconds, Minutes, Hours</option>
+              <option value="SMHD" selected>Secs, Mins, Hrs, Days</option>
+              <option value="SMHDY">Secs, Mins, Hrs, Days, Years</option>
+            </select>
+          </span>
           <button id="countdown-confirm" style="color:black; width: 12em; margin: 0 auto;">Add new countdown</button>
           `.trim();
 
@@ -217,6 +274,7 @@
             const labelInput = countdownInputElem.querySelector('#main-label-input');
             const timeInput = countdownInputElem.querySelector('#time-add');
             const countdownConfirm = countdownInputElem.querySelector('#countdown-confirm');
+            const unitSelection = countdownInputElem.querySelector('#unit-selection');
 
             function clearInput() {
               timeInput.value = null;
@@ -228,13 +286,15 @@
             countdownConfirm.addEventListener('click', () => {
               const timestamp = parseInt(timeInput.value);
               if (isNaN(timestamp)) return;
+              const unitSelectIndex = commonLabelsEnum[unitSelection.value] ?? 3;
 
-              const timeLabelArr = defaultTimeLables();
+              // TODO: Use enum value acquired instead from an options element
+              const timeLabelArr = commonLabelsObjects[unitSelectIndex];
 
               const countdownObj = {
                 label: sanitize(labelInput.value),
                 timestamp: timestamp,
-                labels: timeLabelArr,
+                labels: commonLabelsEnum[unitSelectIndex], 
                 countdownInstance: new CountdownUtil(timestamp, timeLabelArr)
               };
               newCountdown(countdowns.push(countdownObj)-1);
