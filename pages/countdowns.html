@@ -14,7 +14,6 @@
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@1,400;1,700&display=swap">
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap">
     <script type="text/javascript">
-      let getCountdowns = null;
       window.addEventListener("load", () => {
         const countdowns = [];
 
@@ -111,7 +110,7 @@
         // ! CURRENTLY NOT DECODING CORRECTLY!
         function getCountdowns() {
           const countdownValue = localStorage.getItem('countdowns');
-          if (countdownValue == null || countdownValue == '') return;
+          if (countdownValue === null || countdownValue === '') return;
           const countdownValueArr = countdownValue.split('%');
 
           for (const key of countdownValueArr) {
@@ -119,20 +118,36 @@
             const countdownObj = {
               label: label,
               timestamp: parseInt(timestamp),
-              labels: null
+              labels: []
             };
+
             const checkForEnum = timeLabelsStr.match(/(?:<)([^<>]+)(?:>)/);
+            let labelsArr = null;
             if (checkForEnum) {
               countdownObj.labels = checkForEnum[1];
+              labelsArr = commonLabelsObjects[commonLabelsEnum[countdownObj.labels]];
             } else {
-              // TODO: Make this handle custom time unit labels
-              // for (const objStr of timeLabelsStr.split('|')) {
-              //   countdownObj.labels.push(JSON.parse(objStr));
-              // }
+              for (const objStr of timeLabelsStr.split('|')) {
+                // label:radix|~labelSingular,labelPlural:radix
+                let resultObj = {};
+                if (objStr.startsWith('~')) {
+                  const tempObjArr = objStr.slice(1).split(':');
+                  resultObj['label'] = tempObjArr[0].split(',');
+                  resultObj['radix'] = tempObjArr[1]
+
+                } else {
+                  const tempObjArr = objStr.split(':');
+                  resultObj['label'] = tempObjArr[0];
+                  resultObj['radix'] = tempObjArr[1];
+                }
+                console.log(resultObj); // debug
+                countdownObj.labels.push(resultObj);
+              }
             }
+
             countdownObj.countdownInstance = new CountdownUtil(
               countdownObj.timestamp,
-              commonLabelsObjects[commonLabelsEnum[countdownObj.labels]]
+              (labelsArr ?? countdownObj.labels)
             );
             countdowns.push(countdownObj);
           }
@@ -150,7 +165,6 @@
             countdownInstance: CountdownUtil
           }[]
         */
-       // ! CURRENTLY NOT ENCODING CORRECTLY!
         function saveCountdowns() {
           if (countdowns.length === 0) {
             localStorage.setItem('countdowns', '');
@@ -179,12 +193,11 @@
           }
           const keyStr = keyArr.join('%');
           localStorage.setItem('countdowns', keyStr);
-          //TODO: countdownName*timestamp*second:60|[minute,minutes]:60%countdownName*timestamp*<SM>
+          //TODO: countdownName*timestamp*second:60|~minute,minutes:60%countdownName*timestamp*<SM>
           return keyStr;
         }
 
         function main() {
-          getCountdowns = () => countdowns;
           getCountdowns();
           let curInterval = null;
           const addCountdownBtn = document.querySelector('#add-countdown');
@@ -208,7 +221,6 @@
 
               countdownCont.removeChild(countdownInterface);
               countdowns.splice(index, 1);
-              console.log(countdowns); // debug
               saveCountdowns();
               newInterval();
             });
@@ -258,6 +270,8 @@
           `.trim();
 
           function sanitize(str) {
+            str = str.replace(/,/g, '&#44;');
+            str = str.replace(/~/g, '&#126;');
             str = str.replace(/</g, '&#60;');
             str = str.replace(/>/g, '&#62;');
             str = str.replace(/\*/g, '&#42;');
