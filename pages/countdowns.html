@@ -115,24 +115,16 @@
             return;
           };
           const keyArr = [];
-          function sanitize(str) {
-            str = str.replace(/</g, '&#60;');
-            str = str.replace(/>/g, '&#62;');
-            str = str.replace(/\*/g, '&#42;');
-            str = str.replace(/\|/g, '&#124;');
-            str = str.replace(/%/g, '&#37;');
-            return str;
-          }
           for (const countdown of countdowns) {
-            const mainLabel = sanitize(countdown.label);
+            const mainLabel = countdown.label;
             const labelObjArr = [];
             for (let i = 0; i < countdown.labels.length; i++) {
               if (Array.isArray(countdown.labels[i].label)) {
                 for (let j = 0; j < countdown.labels[i].label.length; j++) {
-                  countdown.labels[i].label[j] = sanitize(countdown.labels[i].label[j]);
+                  countdown.labels[i].label[j] = countdown.labels[i].label[j];
                 }
               } else {
-                countdown.labels[i].label = sanitize(countdown.labels[i].label);
+                countdown.labels[i].label = countdown.labels[i].label;
               }
               labelObjArr.push(JSON.stringify(countdown.labels[i]));
             }
@@ -208,6 +200,15 @@
           <button id="countdown-confirm" style="color:black; width: 12em; margin: 0 auto;">Add new countdown</button>
           `.trim();
 
+          function sanitize(str) {
+            str = str.replace(/</g, '&#60;');
+            str = str.replace(/>/g, '&#62;');
+            str = str.replace(/\*/g, '&#42;');
+            str = str.replace(/\|/g, '&#124;');
+            str = str.replace(/%/g, '&#37;');
+            return str;
+          }
+
           function countdownInput() {
             addCountdownBtn.style.display = 'none';
             countdownCont.style.display = 'none';
@@ -231,7 +232,7 @@
               const timeLabelArr = defaultTimeLables();
 
               const countdownObj = {
-                label: labelInput.value,
+                label: sanitize(labelInput.value),
                 timestamp: timestamp,
                 labels: timeLabelArr,
                 countdownInstance: new CountdownUtil(timestamp, timeLabelArr)
