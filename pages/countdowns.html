@@ -298,13 +298,12 @@
               addCountdownBtn.style.display = 'block';
               countdownInputElem.style.display = 'none';
             }
-            exitBtn.addEventListener('click', clearInput);
+            exitBtn.addEventListener('click', () => {clearInput(); countdownCont.style.display = 'block';});
             countdownConfirm.addEventListener('click', () => {
               const timestamp = parseInt(timeInput.value);
               if (isNaN(timestamp)) return;
               const unitSelectIndex = commonLabelsEnum[unitSelection.value] ?? 3;
 
-              // TODO: Use enum value acquired instead from an options element
               const timeLabelArr = commonLabelsObjects[unitSelectIndex];
 
               const countdownObj = {
