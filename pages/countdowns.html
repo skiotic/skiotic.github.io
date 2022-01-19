@@ -206,7 +206,7 @@
           }
           const keyStr = keyArr.join('%');
           localStorage.setItem('countdowns', keyStr);
-          //TODO: countdownName*timestamp*second:60|~minute,minutes:60%countdownName*timestamp*<SM>
+          //countdownName*timestamp*label:radix|~labelSingular,labelPlural:radix%countdownName*timestamp*<ENUM>
           return keyStr;
         }
 
@@ -282,45 +282,47 @@
           <button id="countdown-confirm" style="color:black; width: 12em; margin: 0 auto;">Add new countdown</button>
           `.trim();
 
-          function countdownInput() {
+          const exitBtn = countdownInputElem.querySelector('#input-exit-btn');
+          const labelInput = countdownInputElem.querySelector('#main-label-input');
+          const timeInput = countdownInputElem.querySelector('#time-add');
+          const countdownConfirm = countdownInputElem.querySelector('#countdown-confirm');
+          const unitSelection = countdownInputElem.querySelector('#unit-selection');
+
+          function clearInput() {
+            timeInput.value = null;
+            labelInput.value = null;
+            addCountdownBtn.style.display = 'block';
+            countdownInputElem.style.display = 'none';
+          }
+
+          exitBtn.addEventListener('click', () => {clearInput(); countdownCont.style.display = 'block';});
+          countdownConfirm.addEventListener('click', () => {
+            const timestamp = parseInt(timeInput.value);
+            if (isNaN(timestamp)) return;
+            const unitSelectIndex = commonLabelsEnum[unitSelection.value] ?? 3;
+
+            const timeLabelArr = commonLabelsObjects[unitSelectIndex];
+
+            const countdownObj = {
+              label: sanitize(labelInput.value),
+              timestamp: timestamp,
+              labels: commonLabelsEnum[unitSelectIndex], 
+              countdownInstance: new CountdownUtil(timestamp, timeLabelArr)
+            };
+            newCountdown(countdowns.push(countdownObj)-1);
+            clearInput();
+            saveCountdowns();
+            newInterval();
+          });
+
+          function showCountdownInput() {
             addCountdownBtn.style.display = 'none';
             countdownCont.style.display = 'none';
             countdownInputElem.style.display = 'flex';
-            const exitBtn = countdownInputElem.querySelector('#input-exit-btn');
-            const labelInput = countdownInputElem.querySelector('#main-label-input');
-            const timeInput = countdownInputElem.querySelector('#time-add');
-            const countdownConfirm = countdownInputElem.querySelector('#countdown-confirm');
-            const unitSelection = countdownInputElem.querySelector('#unit-selection');
-
-            function clearInput() {
-              timeInput.value = null;
-              labelInput.value = null;
-              addCountdownBtn.style.display = 'block';
-              countdownInputElem.style.display = 'none';
-            }
-            exitBtn.addEventListener('click', () => {clearInput(); countdownCont.style.display = 'block';});
-            countdownConfirm.addEventListener('click', () => {
-              const timestamp = parseInt(timeInput.value);
-              if (isNaN(timestamp)) return;
-              const unitSelectIndex = commonLabelsEnum[unitSelection.value] ?? 3;
-
-              const timeLabelArr = commonLabelsObjects[unitSelectIndex];
-
-              const countdownObj = {
-                label: sanitize(labelInput.value),
-                timestamp: timestamp,
-                labels: commonLabelsEnum[unitSelectIndex], 
-                countdownInstance: new CountdownUtil(timestamp, timeLabelArr)
-              };
-              newCountdown(countdowns.push(countdownObj)-1);
-              clearInput();
-              saveCountdowns();
-              newInterval();
-            });
           }
           contentBody.appendChild(countdownInputElem);
           for (let i = 0; i < countdowns.length; i++) newCountdown(i);
-          addCountdownBtn.addEventListener('click', countdownInput);
+          addCountdownBtn.addEventListener('click', showCountdownInput);
           if (countdowns.length > 0) newInterval();
         }
         main();
