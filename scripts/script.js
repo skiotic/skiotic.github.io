@@ -1,6 +1,5 @@
 let pageChange = false;
 window.addEventListener('load', function() {
-  const tempglobal = {};
   (() => {
     let json;
     const req = new XMLHttpRequest();
@@ -22,6 +21,14 @@ window.addEventListener('load', function() {
   const homeBtn = document.querySelector("#home-btn");
   
   homeBtn.addEventListener('click', () => window.location.assign("https://skiotic.github.io"));
+
+  let isIndexPage = function() {
+    return window.location.pathname === "/" || window.location.pathname.endsWith("skiotic.github.io\/index.html");
+  }
+
+  if (!isIndexPage()) return;
+
+  const tempglobal = {};
 
   let addTempProp = function(key, value) {
     Object.defineProperty(tempglobal, key, {
@@ -147,13 +154,7 @@ window.addEventListener('load', function() {
     `.trim()]
   );
 
-  let isIndexPage = function() {
-    return window.location.pathname === "/" || window.location.pathname.endsWith("skiotic.github.io\/index.html");
-  }
-
   let pageSetup = function() {
-    if (!isIndexPage()) return;
-
     const prefix = "#content:";
     pageChange = false;
   
