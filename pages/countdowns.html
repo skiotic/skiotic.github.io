@@ -124,7 +124,7 @@
           const countdownValueArr = countdownValue.split('%');
 
           for (const key of countdownValueArr) {
-            const [label, timestamp, timeLabelsStr] = key.split('*');
+            const [label, timestamp, timeLabelsStr] = key.split('*', 3);
             const countdownObj = {
               label: label,
               timestamp: parseInt(timestamp),
@@ -141,15 +141,15 @@
                 // label:radix|~labelSingular,labelPlural:radix
                 let resultObj = {};
                 if (objStr.startsWith('~')) {
-                  const tempObjArr = objStr.slice(1).split(':');
-                  const tempLabelArr = tempObjArr[0].split(',');
+                  const tempObjArr = objStr.slice(1).split(':', 2);
+                  const tempLabelArr = tempObjArr[0].split(',', 2);
                   tempLabelArr[0] = sanitize(tempLabelArr[0]);
                   tempLabelArr[1] = sanitize(tempLabelArr[1]);
 
                   resultObj['label'] = tempLabelArr;
                   resultObj['radix'] = sanitize(tempObjArr[1]);
                 } else {
-                  const tempObjArr = objStr.split(':');
+                  const tempObjArr = objStr.split(':', 2);
                   resultObj['label'] = sanitize(tempObjArr[0]);
                   resultObj['radix'] = sanitize(tempObjArr[1]);
                 }
