@@ -40,9 +40,7 @@ window.addEventListener('load', function() {
   }
 
   let deleteTempProp = function(key) {
-    let value = new Object(tempglobal[value]);
-    delete tempglobal[key];
-    return value;
+    return delete tempglobal[key];
   }
 
   let addAudioPlayer = function(src) {
@@ -74,7 +72,45 @@ window.addEventListener('load', function() {
       <img style="border: none;" id="some-img" src="./assets/some-text.gif">
       <p id="some-text" style="color: white; font-size: 5em; z-index: 10; position: absolute; top: 160px; left: 30%; transform: rotate(-20deg); max-width: 500px;">Oh. you lose.</p>
     </div>
-    `.trim(), () => {
+    `.trim(),
+    () => {
+      const newStyle = addTempProp('style', document.createElement('style'));
+      newStyle.innerHTML = `
+        #some-img {
+          z-index: 5;
+          animation-duration: 4s;
+          animation-name: thething;
+        }
+        @keyframes thething {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        #some-text {
+          animation-duration: 2s;
+          animation-name: athing;
+        }
+        @keyframes athing {
+          from {
+            top: 100px;
+            left: 50%;
+            max-width: 350px;
+            font-size: 3em;
+            transform: rotate(15deg);
+          }
+          to {
+            top: 160px;
+            left: 30%;
+            max-width: 500px;
+            font-size: 5em;
+            transform: rotate(-20deg);
+          }
+        }`.trim();
+      document.head.appendChild(newStyle);
+
       let player = addAudioPlayer('./assets/some-text.mp3');
       player.load();
       player.loop = true;
@@ -100,6 +136,8 @@ window.addEventListener('load', function() {
           container.appendChild(btn);
         });
       });
+    }, () => {
+      document.head.removeChild(tempglobal['style']);
     }]
   );
 
@@ -158,11 +196,12 @@ window.addEventListener('load', function() {
     const prefix = "#content:";
     pageChange = false;
   
-    let insertContent = function(content, callback = null) {
+    let insertContent = function(content, initCallback = null, destructCallback = null) {
       const contentArea = document.querySelector('#content-body');
       contentArea.innerHTML = content;
-      tempglobal.callback = callback ?? (() => {});
-      tempglobal.callback();
+      tempglobal.initCallback = initCallback;
+      tempglobal.destruct = destructCallback;
+      tempglobal.initCallback?.();
     }
 
     let hash = window.location.hash;
@@ -180,12 +219,13 @@ window.addEventListener('load', function() {
         hash.substring(0, prefix.length) === prefix || (hash === "" && hashTitle === "")
       )
     ) {
-      insertContent(content[0], content[1] ?? null);
+      insertContent(...content);
     }
   }
   pageSetup();
   window.addEventListener('hashchange', () => {
     pageChange = true;
+    tempglobal.destruct?.();
     if (tempglobal?.['players']) {
       // Pauses audio players to be freed up for garbage collection when Audio constructor is deleted
       for (const player of tempglobal['players']) {

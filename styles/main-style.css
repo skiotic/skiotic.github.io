@@ -59,6 +59,7 @@ h1 {
 }
 
 h2 {
+    color: var(--text);
     font-weight: normal;
     font-style: italic;
     font-size: 2.5em;
@@ -153,6 +154,7 @@ h1::-moz-selection {
     background-color: var(--trans1);
     grid-column: 2 / span 1;
     text-align: center;
+    word-wrap: break-word;
     width: 100%;
     min-width: 300px;
     max-width: 1320px;
