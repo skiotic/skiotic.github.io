@@ -65,11 +65,13 @@
             y = 2*(xtemp*y) + cy;
 
             length2 = x2 + y2;
-            if (length2 > limit2) {
-              break;
-            }
+            if (length2 > limit2) break;
           }
-          return { length: length2, amount: i, limit: limit2 };
+          return {
+            length: length2,
+            amount: i,
+            limit: limit2
+          };
         },
         "burningship": function(cx, cy, iter) {
           const limit = 1e6;
@@ -85,29 +87,14 @@
             y = 2*Math.abs(xtemp*y) + cy;
 
             length2 = x2 + y2;
-            if (length2 > limit2) {
-              break;
-            }
+            if (length2 > limit2) break;
           }
-          return { length: length2, amount: i, limit: limit2 };
-        }//,
-        // "chirikov": function(cx, cy, iter) {
-        //   const limit = 100;
-        //   const limit2 = limit*limit;
-        //   let x = cx, y = cy;
-        //   let i;
-        //   let length2;
-        //   for (i = 0; i <= iter; i++) {
-        //     y = y + (cy*Math.sin(x));
-        //     x = x + (cx*y);
-
-        //     length2 = (x*x) + (y*y);
-        //     if (length2 > limit2) {
-        //       break;
-        //     }
-        //   }
-        //   return { length: length2, amount: i, limit: limit2 };
-        // }
+          return {
+            length: length2,
+            amount: i,
+            limit: limit2
+          };
+        }
       };
       Object.freeze(fractal);
 
