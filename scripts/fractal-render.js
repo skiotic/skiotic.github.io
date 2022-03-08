@@ -303,7 +303,7 @@ window.addEventListener('load', function() {
     static startRenderEvt = new Event("start");
     static endRenderEvt = new Event("end");
     static renderEvts = new EventTarget();
-    
+
     static inRendering = false;
     static interpolate = false;
     static workerSize = 5;
@@ -484,14 +484,12 @@ window.addEventListener('load', function() {
     });
   });
 
-  const overlayOnHover = document.querySelector("#canvas-overlay:hover");
-
   Fractal.renderEvts.addEventListener("start", () => {
-    overlayOnHover.style.cursor = "wait";
+    overlay.classList.toggle("waiting-cursor");
   });
 
   Fractal.renderEvts.addEventListener("end", () => {
-    overlayOnHover.style.cursor = "crosshair";
+    overlay.classList.toggle("waiting-cursor");
   });
 
   document.querySelector("#poi-list").addEventListener("change", POI.getFile);
