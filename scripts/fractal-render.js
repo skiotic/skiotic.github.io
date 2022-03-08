@@ -324,8 +324,10 @@ window.addEventListener('load', function() {
     }
 
     static async makefractal(curConfig = config) {
+      if (Fractal.inRendering) return;
       const data = await Fractal.calcWorkerFrame(curConfig);
       Draw.fractalQueue.pushBack(data);
+      Fractal.inRendering = false;
       window.requestAnimationFrame(Draw.base);
     }
 
@@ -437,7 +439,6 @@ window.addEventListener('load', function() {
       baseCtx.fillStyle = "#333333";
       baseCtx.fillText("Loading...", midpoint.x - 100, midpoint.y - 8);
       Fractal.makefractal();
-      Fractal.inRendering = false;
     }
   }
 
