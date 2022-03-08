@@ -28,6 +28,8 @@ window.addEventListener('load', function() {
     bFreq: 0.2
   };
 
+  Object.assign(oldConfig, config);
+  
   const defaultConfig = Object.freeze({
     iterations: 200,
     zoom: 0.4,
@@ -120,6 +122,7 @@ window.addEventListener('load', function() {
     }
 
     static setToDefault() {
+      Object.assign(oldConfig, config);
       Object.keys(config).forEach(propname => {
         config[propname] = defaultConfig[propname];
       });
@@ -332,7 +335,7 @@ window.addEventListener('load', function() {
       if (Fractal.inRendering) return;
       Fractal.inRendering = true;
       if (Fractal.interpolate) {
-        Fractal.fractalInterpol(config);
+        Fractal.fractalInterpol(curConfig);
       } else {
         const data = await Fractal.calcWorkerFrame(curConfig);
         Draw.fractalQueue.pushBack(data);
