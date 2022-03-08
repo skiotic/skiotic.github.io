@@ -302,13 +302,9 @@ window.addEventListener('load', function() {
   class Fractal {
     static inRendering = false;
     static interpolate = false;
+    static workerSize = 5;
 
-    static workers = Object.freeze([
-      new Worker(fractalWorkerURL),
-      new Worker(fractalWorkerURL),
-      new Worker(fractalWorkerURL),
-      new Worker(fractalWorkerURL),
-    ]);
+    static workers = [];
 
     static waitForWorkerData() {
       const workerEvents = new EventTarget();
@@ -538,6 +534,10 @@ window.addEventListener('load', function() {
     a.remove();
     downloads++;
   });
+
+  for (let i = 0; i < Fractal.workerSize; i++) {
+    Fractal.workers.push(new Worker(fractalWorkerURL));
+  }
   
   Input.setToDefault();
   window.requestAnimationFrame(Draw.base);
