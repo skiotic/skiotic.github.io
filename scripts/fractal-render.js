@@ -300,11 +300,25 @@ window.addEventListener('load', function() {
   const fractalWorkerURL = "../scripts/workers/fractal-gen.worker.js";
 
   class Fractal {
+    static startRenderEvt = new Event("start");
+    static endRenderEvt = new Event("end");
+    static renderEvts = new EventTarget();
+    
     static inRendering = false;
     static interpolate = false;
     static workerSize = 5;
 
     static workers = [];
+
+    static setRendering(bool) {
+      if (bool) {
+        Fractal.inRendering = true;
+        Fractal.renderEvts.dispatchEvent(Fractal.startRenderEvt);
+        return;
+      }
+      Fractal.inRendering = false;
+      Fractal.renderEvts.dispatchEvent(Fractal.endRenderEvt);
+    }
 
     static waitForWorkerData() {
       const workerEvents = new EventTarget();
@@ -329,13 +343,14 @@ window.addEventListener('load', function() {
 
     static async makefractal(curConfig = config) {
       if (Fractal.inRendering) return;
-      Fractal.inRendering = true;
+      Fractal.setRendering(true);
       if (Fractal.interpolate) {
         Fractal.fractalInterpol(curConfig);
       } else {
         const data = await Fractal.calcWorkerFrame(curConfig);
         Draw.fractalQueue.pushBack(data);
-        Fractal.inRendering = false;
+        Fractal.setRendering(false);
+
         window.requestAnimationFrame(Draw.base);
       }
     }
@@ -366,7 +381,7 @@ window.addEventListener('load', function() {
         Draw.fractalQueue.pushBack(elem);
       }
       Draw.fractalQueue.pushBack(await Fractal.calcWorkerFrame(newConfig));
-      Fractal.inRendering = false;
+      Fractal.setRendering(false);
       window.requestAnimationFrame(Draw.base);
     }
 
@@ -467,6 +482,16 @@ window.addEventListener('load', function() {
     elem.addEventListener("change", () => {
       elem.setAttribute("title", elem.value);
     });
+  });
+
+  const overlayOnHover = document.querySelector("#canvas-overlay:hover");
+
+  Fractal.renderEvts.addEventListener("start", () => {
+    overlayOnHover.style.cursor = "wait";
+  });
+
+  Fractal.renderEvts.addEventListener("end", () => {
+    overlayOnHover.style.cursor = "crosshair";
   });
 
   document.querySelector("#poi-list").addEventListener("change", POI.getFile);
