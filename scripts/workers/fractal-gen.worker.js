@@ -74,10 +74,11 @@ class FractalGen {
   static async calcFrame(curFractal, curConfig, position,
     bufferLength, width, height, midpoint) {
       const buffer = new Uint8ClampedArray(bufferLength);
-      const arrPos = position * bufferLength;
-      for (let i = arrPos, y = (arrPos/width); i < (arrPos + bufferLength); i++) {
+      const pixelAmount = bufferLength/4;
+      const arrPos = position * pixelAmount;
+      for (let i = arrPos, y = (arrPos/width)-1; i < (arrPos + pixelAmount); i++) {
         let x = i % width;
-        if (x == 0 && i != arrPos) y++;
+        if (x == 0) y++;
         const coordsAmount = FractalGen.map[curFractal](
           ((x - midpoint.x)/height)/curConfig.zoom + curConfig.shiftX,
           ((y - midpoint.y)/height)/curConfig.zoom + curConfig.shiftY,
