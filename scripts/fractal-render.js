@@ -108,10 +108,8 @@ window.addEventListener('load', function() {
   };
 
   class Input {
-    static fieldElems = document.querySelectorAll("#input-group input, #input-group select");
-
     static assignFieldValues() {
-      Input.fieldElems.forEach(elem => {
+      document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
         if (elem.id === "select-fract") {
           elem.value = curFractal.toString();
         } else {
@@ -124,7 +122,7 @@ window.addEventListener('load', function() {
       Object.keys(config).forEach(propname => {
         config[propname] = defaultConfig[propname];
       });
-      Input.fieldElems.forEach(elem => {
+      document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
         elem.setAttribute("title", config[elemValueMap[elem.id]]);
       });
       Input.assignFieldValues();
@@ -132,7 +130,7 @@ window.addEventListener('load', function() {
     }
 
     static insertInputs() {
-      Input.fieldElems.forEach(elem => {
+      document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
         if (elem.id === "select-fract") {
           curFractal = parseInt(elem.value);
         } else {
@@ -450,7 +448,7 @@ window.addEventListener('load', function() {
     window.requestAnimationFrame(Draw.overlay);
   });
 
-  Input.fieldElems.forEach(elem => {
+  document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
     elem.addEventListener("change", () => {
       elem.setAttribute("title", elem.value);
     });
