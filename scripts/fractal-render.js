@@ -379,7 +379,7 @@ window.addEventListener('load', function() {
         const workerResults = await Fractal.waitForWorkerData();
         for (const {position, buffer} of workerResults) {
           for (let i = 0; i < buffer.length; i++) {
-            combinedBuffer[position+i] = buffer[i];
+            combinedBuffer[buffer.length*position + i] = buffer[i];
           }
         }
         resolve(combinedBuffer);
