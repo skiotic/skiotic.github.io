@@ -305,6 +305,7 @@ window.addEventListener('load', function() {
 
     static waitForWorkerData() {
       const workerEvents = new EventTarget();
+      const endEvt = new Event("end");
       return new Promise((resolve, reject) => {
         for (const worker of Fractal.workers) {
           worker.postMessage({ready: true});
@@ -316,7 +317,7 @@ window.addEventListener('load', function() {
           worker.addEventListener('message', e => {
             workerData.push(e.data);
             if (workerData.length >= Fractal.workers.length) {
-              workerEvents.dispatchEvent("end");
+              workerEvents.dispatchEvent(endEvt);
             }
           });
         }
