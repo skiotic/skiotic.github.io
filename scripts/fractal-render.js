@@ -360,7 +360,6 @@ window.addEventListener('load', function() {
 
     static calcWorkerFrame(curConfig) {
       return new Promise(async (resolve, reject) => {
-        baseCtx.clearRect(0, 0, base.width, base.height);
         const bufferLength = 4 * base.width * base.height;
         const combinedBuffer = new Uint8ClampedArray(bufferLength);
         for (let i = 0; i < Fractal.workers.length; i++) {
@@ -404,6 +403,7 @@ window.addEventListener('load', function() {
 
     static base() {
       if (Draw.fractalQueue.isEmpty) return;
+      baseCtx.clearRect(0, 0, base.width, base.height);
 
       const drawnImage = new ImageData(
         Draw.fractalQueue.popFront(), base.width, base.height);
