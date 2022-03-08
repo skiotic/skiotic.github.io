@@ -76,7 +76,7 @@ class FractalGen {
       const buffer = new Uint8ClampedArray(bufferLength);
       const pixelAmount = bufferLength/4;
       const arrPos = position * pixelAmount;
-      for (let i = 0, y = (arrPos/width)-1; i < (arrPos + pixelAmount); i++) {
+      for (let i = 0, y = (arrPos/width)-1; i < pixelAmount; i++) {
         let x = i % width;
         if (x == 0) y++;
         const coordsAmount = FractalGen.map[curFractal](
