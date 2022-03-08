@@ -325,6 +325,7 @@ window.addEventListener('load', function() {
 
     static async makefractal(curConfig = config) {
       if (Fractal.inRendering) return;
+      Fractal.inRendering = true;
       const data = await Fractal.calcWorkerFrame(curConfig);
       Draw.fractalQueue.pushBack(data);
       Fractal.inRendering = false;
@@ -431,7 +432,6 @@ window.addEventListener('load', function() {
 
     static fLoading() {
       if (Fractal.inRendering) return;
-      Fractal.inRendering = true;
       Input.assignFieldValues();
       baseCtx.font = "40px sans-serif";
       baseCtx.fillStyle = "#ffffff88";
