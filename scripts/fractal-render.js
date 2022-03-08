@@ -170,15 +170,15 @@ window.addEventListener('load', function() {
       a.remove();
     }
 
-    static setPOIList(poiParsedList) {
-      clearPOIArray();
+    static setList(poiParsedList) {
+      POI.clearArray();
       for (let i = 0; i < poiParsedList.length; i++) {
-        const poiObj = cleanPOIObj(poiParsedList[i]);
+        const poiObj = POI.cleanObj(poiParsedList[i]);
         poiArray.push(poiObj);
       }
-      loadPOIArrayElem(poiArrPos = 0);
-      assignValues();
-      drawLoading();
+      POI.loadArrayElem(poiArrPos = 0);
+      Input.assignFieldValues();
+      Draw.fLoading();
     }
 
     // Type checking POI element input.
