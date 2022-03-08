@@ -29,7 +29,7 @@ window.addEventListener('load', function() {
   };
 
   Object.assign(oldConfig, config);
-  
+
   const defaultConfig = Object.freeze({
     iterations: 200,
     zoom: 0.4,
@@ -344,7 +344,7 @@ window.addEventListener('load', function() {
       }
     }
 
-    static async fractalInterpol(newConfig, frames = 30) {
+    static async fractalInterpol(newConfig, frames = 15) {
       const frameCache = new Queue();
       let interConfig = {};
       Object.assign(interConfig, oldConfig);
@@ -490,30 +490,35 @@ window.addEventListener('load', function() {
   window.addEventListener('keyup', k => {
     k.preventDefault();
     const char = k.key.toLowerCase();
+    let validInput = false;
     if (char == "u") {
       config.shiftX = curCoords.x;
       config.shiftY = curCoords.y;
       config.zoom *= 2;
-      window.requestAnimationFrame(Draw.fLoading);
+      validInput = true;
     } else if (char == "o") {
       config.shiftX = curCoords.x;
       config.shiftY = curCoords.y;
       config.zoom *= 0.5;
-      window.requestAnimationFrame(Draw.fLoading);
+      validInput = true;
     } else {
       if (char == "l") {
         config.shiftX += 0.25 / config.zoom;
-        window.requestAnimationFrame(Draw.fLoading);
+        validInput = true;
       } else if (char == "i") {
         config.shiftY -= 0.25 / config.zoom;
-        window.requestAnimationFrame(Draw.fLoading);
+        validInput = true;
       } else if (char == "j") {
         config.shiftX -= 0.25 / config.zoom;
-        window.requestAnimationFrame(Draw.fLoading);
+        validInput = true;
       } else if (char == "k") {
         config.shiftY += 0.25 / config.zoom;
-        window.requestAnimationFrame(Draw.fLoading);
+        validInput = true;
       }
+    }
+    if (validInput) {
+      Object.assign(oldConfig, config);
+      window.requestAnimationFrame(Draw.fLoading);
     }
   });
 
