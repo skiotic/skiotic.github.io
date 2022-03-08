@@ -94,7 +94,7 @@ class FractalGen {
         buffer[j+2] = colorArr[2];
         buffer[j+3] = 255;
       }
-      resolve(buffer);
+      return buffer;
   }
 }
 
