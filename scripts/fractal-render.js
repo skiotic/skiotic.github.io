@@ -5,11 +5,8 @@
 
 window.addEventListener('load', function() {
   const tau = Math.PI * 2;
-
-  var saveCount = 0;// Amount of images saved from fractal canvas
   const width = 1017;// Canvas width
   const height = 1000;// Canvas height
-  var zoom = 0.4;
 
   const midpoint = {
     x: Math.ceil(width/2),
@@ -296,6 +293,8 @@ window.addEventListener('load', function() {
   const fractalWorkerURL = "../scripts/workers/fractal-gen.worker.js";
 
   class Fractal {
+    static inRendering = false;
+
     static workers = Object.freeze([
       new Worker(fractalWorkerURL),
       new Worker(fractalWorkerURL),
@@ -429,6 +428,8 @@ window.addEventListener('load', function() {
     }
 
     static fLoading() {
+      if (Fractal.inRendering) return;
+      Fractal.inRendering = true;
       Input.assignFieldValues();
       baseCtx.font = "40px sans-serif";
       baseCtx.fillStyle = "#ffffff88";
@@ -436,6 +437,7 @@ window.addEventListener('load', function() {
       baseCtx.fillStyle = "#333333";
       baseCtx.fillText("Loading...", midpoint.x - 100, midpoint.y - 8);
       Fractal.makefractal();
+      Fractal.inRendering = false;
     }
   }
 
