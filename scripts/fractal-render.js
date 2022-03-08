@@ -13,6 +13,8 @@ window.addEventListener('load', function() {
     y: Math.ceil(height/2)
   };
 
+  let oldConfig = {};
+
   const config = {
     iterations: 200, // Amount of iterations
     zoom: 0.4, // Zooming
@@ -129,6 +131,7 @@ window.addEventListener('load', function() {
     }
 
     static insertInputs() {
+      oldConfig = Object.assign(oldConfig, config);
       Input.fieldElems.forEach(elem => {
         if (elem.id === "select-fract") {
           curFractal = parseInt(elem.value);
@@ -269,6 +272,7 @@ window.addEventListener('load', function() {
     }
   
     static loadArrayElem(i) {
+      oldConfig = Object.assign(oldConfig, config);
       const curPoiObj = poiArray[i];
       curFractal = curPoiObj.fractal;
       config.iterations = curPoiObj.iters;
@@ -294,6 +298,7 @@ window.addEventListener('load', function() {
 
   class Fractal {
     static inRendering = false;
+    static interpolate = false;
 
     static workers = Object.freeze([
       new Worker(fractalWorkerURL),
@@ -326,19 +331,24 @@ window.addEventListener('load', function() {
     static async makefractal(curConfig = config) {
       if (Fractal.inRendering) return;
       Fractal.inRendering = true;
-      const data = await Fractal.calcWorkerFrame(curConfig);
-      Draw.fractalQueue.pushBack(data);
-      Fractal.inRendering = false;
-      window.requestAnimationFrame(Draw.base);
+      if (Fractal.interpolate) {
+        Fractal.fractalInterpol(config);
+      } else {
+        const data = await Fractal.calcWorkerFrame(curConfig);
+        Draw.fractalQueue.pushBack(data);
+        Fractal.inRendering = false;
+        window.requestAnimationFrame(Draw.base);
+      }
     }
 
     static async fractalInterpol(newConfig, frames = 30) {
       const frameCache = new Queue();
-      const interConfig = config;
+      let interConfig = {};
+      interConfig = Object.assign(interConfig, oldConfig);
       for (let i = 0; i < frames; i++) {
         for (const key in interConfig) {
           let value;
-          const a = config[key],
+          const a = oldConfig[key],
                 b = newConfig[key];
           if (key == "zoom") {
             value = a * Math.pow(b/a, i/frames);
@@ -465,6 +475,10 @@ window.addEventListener('load', function() {
   document.querySelector("#download-pois").addEventListener("click", POI.saveFile);
   document.querySelector("#prev-poi").addEventListener("click", () => POI.goToElement(-1));
   document.querySelector("#next-poi").addEventListener("click", () => POI.goToElement(1));
+
+  document.querySelector("#interpolate-frames").addEventListener("change", e => {
+    Fractal.interpolate = e.target.checked;
+  });
 
   document.querySelector("#changes-btn").addEventListener("click", Input.insertInputs);
   document.querySelector("#default-btn").addEventListener("click", Input.setToDefault);
