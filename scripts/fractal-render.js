@@ -367,6 +367,7 @@ window.addEventListener('load', function() {
         Draw.fractalQueue.pushBack(elem);
       }
       Draw.fractalQueue.pushBack(await Fractal.calcWorkerFrame(newConfig));
+      Fractal.inRendering = false;
       window.requestAnimationFrame(Draw.base);
     }
 
