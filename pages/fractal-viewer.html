@@ -13,290 +13,8 @@
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto+Slab&display=swap">
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@1,400;1,700&display=swap">
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap">
-    <script type="text/javascript">
-      var saveCount = 0;// Amount of images saved from fractal canvas
-      const width = 1017;// Canvas width
-      const height = 1000;// Canvas height
-      var shiftX = 0, shiftY = 0;
-      var zoom = 0.4
-      const midpoint = {
-        x: Math.ceil(width/2),
-        y: Math.ceil(height/2)
-      };
-      const config = {
-        iterations: 200,// Amount of iterations
-        zoom: 0.4,// Zooming
-        shiftX: 0,// Shifting the view center
-        shiftY: 0,
-        rPhase: -0.2,
-        gPhase: 0,
-        bPhase: 0.1,
-        rWeight: 0.2,
-        gWeight: 0.2,
-        bWeight: 0.2
-      }
-      const defaultConfig = {
-        iterations: 200,
-        zoom: 0.4,
-        shiftX: 0,
-        shiftY: 0,
-        rPhase: -0.2,
-        gPhase: 0,
-        bPhase: 0.1,
-        rWeight: 0.2,
-        gWeight: 0.2,
-        bWeight: 0.2
-      }
-      Object.freeze(defaultConfig);
-      const tau = Math.PI * 2;
-
-      const fractal = {
-        "mandelbrot": function(cx, cy, iter) {
-          const limit = 1e6;
-          const limit2 = limit*limit;
-          let x = cx, y = cy;
-          let i;
-          let length2;
-          for (i = 0; i <= iter; i++) {
-            let xtemp = x;
-            let x2 = x*x;
-            let y2 = y*y;
-            x = x2 - y2 + cx;
-            y = 2*(xtemp*y) + cy;
-
-            length2 = x2 + y2;
-            if (length2 > limit2) break;
-          }
-          return {
-            length: length2,
-            amount: i,
-            limit: limit2
-          };
-        },
-        "burningship": function(cx, cy, iter) {
-          const limit = 1e6;
-          const limit2 = limit*limit;
-          let x = cx, y = cy;
-          let i;
-          let length2;
-          for (i = 0; i <= iter; i++) {
-            let xtemp = x;
-            let x2 = x*x;
-            let y2 = y*y;
-            x = x2 - y2 + cx;
-            y = 2*Math.abs(xtemp*y) + cy;
-
-            length2 = x2 + y2;
-            if (length2 > limit2) break;
-          }
-          return {
-            length: length2,
-            amount: i,
-            limit: limit2
-          };
-        }
-      };
-      Object.freeze(fractal);
-
-      function checkStable(length2, amount, limit2) {
-        if (length2 < limit2) {
-          return [0, 0, 0];
-        }
-        let scalar = Math.log(1 + Math.max(0, amount - Math.log2(Math.log2(length2))));
-        return [
-          127 - 127 * Math.cos(tau * (config.rWeight * scalar + config.rPhase)),
-          127 - 127 * Math.cos(tau * (config.gWeight * scalar + config.gPhase)),
-          127 - 127 * Math.cos(tau * (config.bWeight * scalar + config.bPhase))
-        ];
-      }
-
-      window.addEventListener('load', function() {
-        var mouseX = 0, mouseY = 0;
-        const base = document.querySelector('#canvas-base');
-        const overlay = document.querySelector('#canvas-overlay');
-        const saveBtn = document.querySelector("#btn");
-        const baseCtx = base.getContext('2d', {alpha: false});
-        const overlayCtx = overlay.getContext('2d');
-        var curCoords = {
-          x: ((mouseX-midpoint.x)/height)/config.zoom + config.shiftX,
-          y: ((mouseY-midpoint.y)/height)/config.zoom + config.shiftY
-        };
-        base.width = width;
-        base.height = height;
-        overlay.width = width;
-        overlay.height = height;
-        var downloads = 0;
-        var curFractal = "mandelbrot";
-        const elemValueMap = {
-          "iter": "iterations",
-          "zoom": "zoom",
-          "x-coord": "shiftX",
-          "y-coord": "shiftY",
-          "red-phase": "rPhase",
-          "green-phase": "gPhase",
-          "blue-phase": "bPhase",
-          "red-weight": "rWeight",
-          "green-weight": "gWeight",
-          "blue-weight": "bWeight"
-        };
-
-        function insertInputs() {
-          document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
-            if (elem.id === "select-fract") {
-              curFractal = elem.value;
-            } else {
-              config[elemValueMap[elem.id]] = parseFloat(elem.value) ?? config[elemValueMap[elem.id]];
-            }
-          });
-          window.requestAnimationFrame(drawLoading);
-        }
-
-        function assignValues() {
-          document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
-            if (elem.id === "select-fract") {
-              elem.value = curFractal;
-            } else {
-              elem.value = config[elemValueMap[elem.id]];
-            }
-          });
-        }
-
-        function setToDefault() {
-          Object.keys(config).forEach(propname => {
-            config[propname] = defaultConfig[propname];
-          });
-          document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
-            elem.setAttribute("title", config[elemValueMap[elem.id]]);
-          });
-          assignValues();
-          window.requestAnimationFrame(drawLoading);
-        }
-
-        function drawCursor() {
-          overlayCtx.fillStyle = "#dd11ee";
-          overlayCtx.fillRect(mouseX - 8, mouseY - 1.5, 16, 3);
-          overlayCtx.fillRect(mouseX - 1.5, mouseY - 8, 3, 16);
-        }
-
-        function drawLoading() {
-          assignValues();
-          baseCtx.font = "40px sans-serif";
-          baseCtx.fillStyle = "#ffffff88";
-          baseCtx.fillRect(0, 0, base.width, base.height);
-          baseCtx.fillStyle = "#333333";
-          baseCtx.fillText("Loading...", midpoint.x - 100, midpoint.y - 8);
-          window.requestAnimationFrame(drawFractal);
-        }
-
-        function drawOverlay() {
-          overlayCtx.clearRect(0, 0, width, height);
-          drawCursor();
-
-          const xCoord = "x: " + curCoords.x.toFixed(16);
-          const yCoord = "y: " + curCoords.y.toFixed(16);
-
-          overlayCtx.fillStyle = "#000000cc";
-          overlayCtx.fillRect(15, 16, 240, 65);
-          overlayCtx.font = "18px sans-serif";
-          overlayCtx.fillStyle = "#ffffff";
-          overlayCtx.fillText(xCoord, 30, 40);
-          overlayCtx.fillText(yCoord, 30, 70);
-        }
-
-        function drawFractal() {
-          baseCtx.clearRect(0, 0, base.width, base.height);
-          const totalPixels = base.width * base.height;
-          const data = new Uint8ClampedArray(totalPixels * 4);
-          let y = 0;
-          for (let i = 0; i < totalPixels; i++) {
-            let x = i % base.width;
-            if (x == 0 && i != 0) y++;
-            const coordsAmount = (
-              fractal[curFractal] ?? (() => {
-                throw new Error("Invalid fractal method");
-              })()
-            )(
-              ((x - midpoint.x)/height)/config.zoom + config.shiftX,
-              ((y - midpoint.y)/height)/config.zoom + config.shiftY,
-              config.iterations
-            );
-            const colorArr = checkStable(
-              coordsAmount.length,
-              coordsAmount.amount,
-              coordsAmount.limit
-            );
-            const j = i * 4;
-            data[j]   = colorArr[0];
-            data[j + 1] = colorArr[1];
-            data[j + 2] = colorArr[2];
-            data[j + 3] = 255;
-          }
-          const drawnImage = new ImageData(data, base.width, base.height);
-          baseCtx.putImageData(drawnImage, 0, 0);
-        }
-
-        document.addEventListener('mousemove', e => {
-          mouseX = e.clientX - overlay.getBoundingClientRect().left;
-          mouseY = e.clientY - overlay.getBoundingClientRect().top;
-          curCoords = {
-            x: ((mouseX - midpoint.x)/height)/config.zoom + config.shiftX,
-            y: ((mouseY - midpoint.y)/height)/config.zoom + config.shiftY
-          };
-
-          window.requestAnimationFrame(drawOverlay);
-        });
-        document.querySelectorAll("#input-group input, #input-group select").forEach(elem => {
-          elem.addEventListener("change", () => {
-            elem.setAttribute("title", elem.value);
-          });
-        });
-        document.querySelector("#changes-btn").addEventListener("click", insertInputs);
-        document.querySelector("#default-btn").addEventListener("click", setToDefault);
-        window.addEventListener('keyup', k => {
-          k.preventDefault();
-          const char = k.key.toLowerCase();
-          if (char == "u") {
-            config.shiftX = curCoords.x;
-            config.shiftY = curCoords.y;
-            config.zoom *= 2;
-
-            window.requestAnimationFrame(drawLoading);
-          } else if (char == "o") {
-            config.shiftX = curCoords.x;
-            config.shiftY = curCoords.y;
-            config.zoom *= 0.5;
-            window.requestAnimationFrame(drawLoading);
-          } else {
-            if (char == "l") {
-              config.shiftX += 0.25 / config.zoom;
-              window.requestAnimationFrame(drawLoading);
-            } else if (char == "i") {
-              config.shiftY -= 0.25 / config.zoom;
-              window.requestAnimationFrame(drawLoading);
-            } else if (char == "j") {
-              config.shiftX -= 0.25 / config.zoom;
-              window.requestAnimationFrame(drawLoading);
-            } else if (char == "k") {
-              config.shiftY += 0.25 / config.zoom;
-              window.requestAnimationFrame(drawLoading);
-            }
-          }
-        });
-        saveBtn.addEventListener("click", () => {
-          let a = document.createElement("a");
-          let canvasURL = base.toDataURL('image/png');
-          a.href =  canvasURL;
-          a.style.display = "none";
-          a.download = "fractal-img-" + downloads;
-          a.click();
-          (URL ?? webkitURL).revokeObjectURL(canvasURL);
-          a.remove();
-          downloads++;
-        });
-        setToDefault();
-        window.requestAnimationFrame(drawLoading);
-      });
-    </script>
+    <script src="../scripts/queue.js"></script>
+    <script src="../scripts/fractal-render.js"></script>
     <style>
       #main-grid {max-width: 1290px;}
       #content-body {
@@ -322,6 +40,9 @@
       #canvas-overlay {
         position: absolute;
         z-index: 10;
+      }
+      #canvas-overlay:hover {
+        cursor: crosshair;
       }
       #btn {
         position: absolute;
@@ -389,26 +110,41 @@
             <span class="ctrls" title="Press L to move the center right">l: Right</span>
           </p>
         </div>
-        <div id="input-group" style="display: flex; flex-direction: column;">
-          <label>Iterations: <input id="iter" type="text"></label>
-          <label>Zoom: <input id="zoom" type="text"></label>
-          <label>Coordinate x: <input id="x-coord" type="text"></label>
-          <label>Coordinate y: <input id="y-coord" type="text"></label>
-          <label>Red Phaseshift: -0.5 <input id="red-phase" type="range" min="-0.5" max="0.5" step="0.01"> 0.5</label>
-          <label>Green Phaseshift: -0.5 <input id="green-phase" type="range" min="-0.5" max="0.5" step="0.01"> 0.5</label>
-          <label>Blue Phaseshift: -0.5 <input id="blue-phase" type="range" min="-0.5" max="0.5" step="0.01"> 0.5</label>
-          <label>Red Frequency: 0 <input id="red-weight" type="range" min="0" max="15" step="0.01"> 15</label>
-          <label>Green Frequency: 0 <input id="green-weight" type="range" min="0" max="15" step="0.01"> 15</label>
-          <label>Blue Frequency: 0 <input id="blue-weight" type="range" min="0" max="15" step="0.01"> 15</label>
-          <label>Current Fractal:</label>
-          <select id="select-fract">
-            <option value="mandelbrot" selected>Mandelbrot</option>
-            <option value="burningship">Burning Ship</option>
-            <!-- <option value="chirikov">Chirikov Map</option> -->
-          </select>
-          <div>
-            <button id="changes-btn" style="width: 8em;">Apply Changes</button>
-            <button id="default-btn" style="width: 8em;">Default Reset</button>
+        <div style="display: flex; flex-direction: row;">
+          <div id="input-group" style="display: flex; flex-direction: column;">
+            <label>Iterations: <input id="iter" type="text"></label>
+            <label>Zoom: <input id="zoom" type="text"></label>
+            <label>Coordinate x: <input id="x-coord" type="text"></label>
+            <label>Coordinate y: <input id="y-coord" type="text"></label>
+            <label>Red Phaseshift: -0.5 <input id="red-phase" type="range" min="-0.5" max="0.5" step="0.01"> 0.5</label>
+            <label>Green Phaseshift: -0.5 <input id="green-phase" type="range" min="-0.5" max="0.5" step="0.01"> 0.5</label>
+            <label>Blue Phaseshift: -0.5 <input id="blue-phase" type="range" min="-0.5" max="0.5" step="0.01"> 0.5</label>
+            <label>Red Frequency: 0 <input id="red-weight" type="range" min="0" max="15" step="0.01"> 15</label>
+            <label>Green Frequency: 0 <input id="green-weight" type="range" min="0" max="15" step="0.01"> 15</label>
+            <label>Blue Frequency: 0 <input id="blue-weight" type="range" min="0" max="15" step="0.01"> 15</label>
+            <label>Current Fractal:</label>
+            <select id="select-fract">
+              <option value="0" selected>Mandelbrot</option>
+              <option value="1">Burning Ship</option>
+              <!-- <option value="chirikov">Chirikov Map</option> -->
+            </select>
+            <div>
+              <button id="changes-btn" style="width: 8em;">Apply Changes</button>
+              <button id="default-btn" style="width: 8em;">Default Reset</button>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column;">
+            <div class="list-controls">
+              <button id="prev-poi">prev</button>
+              <button id="delete-cur-poi">delete current</button>
+              <button id="next-poi">next</button>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <label>Upload Points of Interest: <input id="poi-list" type="file"></label>
+              <button id="add-poi">Add Point of Interest</button>
+              <button id="clear-pois">Clear Points of Interest</button>
+              <button id="download-pois">Download Points of Interest</button>
+            </div>
           </div>
         </div>
       </article>
