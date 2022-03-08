@@ -293,7 +293,7 @@ window.addEventListener('load', function() {
     }
   }
 
-  const fractalWorkerURL = "../scripts/fractal-gen-worker.js";
+  const fractalWorkerURL = "../scripts/workers/fractal-gen.worker.js";
 
   class Fractal {
     static workers = Object.freeze([
