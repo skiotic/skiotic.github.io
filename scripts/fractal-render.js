@@ -353,7 +353,7 @@ window.addEventListener('load', function() {
           let value;
           const a = oldConfig[key],
                 b = newConfig[key];
-          if (key == "zoom") {
+          if (false/* key == "zoom" */) {
             value = a * Math.pow(b/a, i/frames);
           } else {
             const diff = a - b;
