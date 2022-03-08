@@ -492,32 +492,37 @@ window.addEventListener('load', function() {
     const char = k.key.toLowerCase();
     let validInput = false;
     if (char == "u") {
+      Object.assign(oldConfig, config);
       config.shiftX = curCoords.x;
       config.shiftY = curCoords.y;
       config.zoom *= 2;
       validInput = true;
     } else if (char == "o") {
+      Object.assign(oldConfig, config);
       config.shiftX = curCoords.x;
       config.shiftY = curCoords.y;
       config.zoom *= 0.5;
       validInput = true;
     } else {
       if (char == "l") {
+        Object.assign(oldConfig, config);
         config.shiftX += 0.25 / config.zoom;
         validInput = true;
       } else if (char == "i") {
+        Object.assign(oldConfig, config);
         config.shiftY -= 0.25 / config.zoom;
         validInput = true;
       } else if (char == "j") {
+        Object.assign(oldConfig, config);
         config.shiftX -= 0.25 / config.zoom;
         validInput = true;
       } else if (char == "k") {
+        Object.assign(oldConfig, config);
         config.shiftY += 0.25 / config.zoom;
         validInput = true;
       }
     }
     if (validInput) {
-      Object.assign(oldConfig, config);
       window.requestAnimationFrame(Draw.fLoading);
     }
   });
