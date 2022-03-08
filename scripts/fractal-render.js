@@ -131,7 +131,7 @@ window.addEventListener('load', function() {
     }
 
     static insertInputs() {
-      oldConfig = Object.assign(oldConfig, config);
+      Object.assign(oldConfig, config);
       Input.fieldElems.forEach(elem => {
         if (elem.id === "select-fract") {
           curFractal = parseInt(elem.value);
@@ -272,7 +272,7 @@ window.addEventListener('load', function() {
     }
   
     static loadArrayElem(i) {
-      oldConfig = Object.assign(oldConfig, config);
+      Object.assign(oldConfig, config);
       const curPoiObj = poiArray[i];
       curFractal = curPoiObj.fractal;
       config.iterations = curPoiObj.iters;
@@ -344,7 +344,7 @@ window.addEventListener('load', function() {
     static async fractalInterpol(newConfig, frames = 30) {
       const frameCache = new Queue();
       let interConfig = {};
-      interConfig = Object.assign(interConfig, oldConfig);
+      Object.assign(interConfig, oldConfig);
       for (let i = 0; i < frames; i++) {
         for (const key in interConfig) {
           let value;
