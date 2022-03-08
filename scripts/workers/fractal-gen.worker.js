@@ -1,5 +1,6 @@
 const tau = Math.PI * 2;
 const events = new EventTarget();
+const readyEvt = new Event("ready");
 
 let isReady = false;
 
@@ -114,7 +115,7 @@ self.addEventListener("message", async e => {
   }} = e;
 
   if (ready) {
-    events.dispatchEvent("ready");
+    events.dispatchEvent(readyEvt);
     isReady = true;
     return;
   }
