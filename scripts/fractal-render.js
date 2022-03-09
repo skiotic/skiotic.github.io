@@ -1,7 +1,5 @@
 // POI = Point of Interest
 // TODO: Solve the object discrepancy between the config saved to a POI, and the POI that is rendered.
-// TODO: Make the canvas rendering use 4 workers.
-// TODO: Interpolate the frames between switching POIs.
 
 window.addEventListener('load', function() {
   const tau = Math.PI * 2;
@@ -48,22 +46,12 @@ window.addEventListener('load', function() {
     freq: {min: 0, max: 15}
   });
 
-  const fracalEnums = Object.freeze({
+  const fractalEnums = Object.freeze({
     MANDELBROT: 0,
-    BURNING_SHIP: 1
+    BURNING_SHIP: 1,
+    //NOVA: 2,
+    //MAGNET: 3,
   });
-
-  function clamp(value, min, max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-  }
-
-  function cyclicClamp(value, min, max) {
-    if (value < min) return max;
-    if (value > max) return min;
-    return value;
-  }
 
   var mouseX = 0, mouseY = 0;
   const base = document.querySelector('#canvas-base');
@@ -81,8 +69,7 @@ window.addEventListener('load', function() {
   base.height = height;
   overlay.width = width;
   overlay.height = height;
-  var downloads = 0;
-  var curFractal = fracalEnums.MANDELBROT;
+  var curFractal = fractalEnums.MANDELBROT;
 
   let poiArrPos = 0;
   const poiArray = [];
@@ -101,7 +88,17 @@ window.addEventListener('load', function() {
   };
   
   class Utils {
-    //
+    static clamp(value, min, max) {
+      if (value < min) return min;
+      if (value > max) return max;
+      return value;
+    }
+  
+    static cyclicClamp(value, min, max) {
+      if (value < min) return max;
+      if (value > max) return min;
+      return value;
+    }
   }
   
   class State {
@@ -188,7 +185,7 @@ window.addEventListener('load', function() {
     static cleanObj(obj) {
       console.log('Before:', obj); // debug
       let {
-        fractal = fracalEnums.MANDELBROT,
+        fractal = fractalEnums.MANDELBROT,
         iters = config.iterations,
         zoom = config.zoom,
         x = config.shiftX,
@@ -204,7 +201,7 @@ window.addEventListener('load', function() {
       console.log('After:', obj); // debug
 
       if (!Number.isInteger(fractal)) {
-        fractal = fracalEnums.MANDELBROT;
+        fractal = fractalEnums.MANDELBROT;
       }
       if (!Number.isInteger(iters)) {
         iters = config.iterations;
@@ -235,15 +232,15 @@ window.addEventListener('load', function() {
 
       return {
         x, y,
-        fractal: clamp(fractal, 0, fractalMethods.length-1),
-        iters: clamp(iters, 1, Infinity), 
-        zoom: clamp(zoom, 0.001, Infinity),
-        rphase: clamp(rphase, phaseFreqMinMax.phase.min, phaseFreqMinMax.phase.max),
-        gphase: clamp(bphase, phaseFreqMinMax.phase.min, phaseFreqMinMax.phase.max),
-        bphase: clamp(gphase, phaseFreqMinMax.phase.min, phaseFreqMinMax.phase.max),
-        rfreq: clamp(rfreq, phaseFreqMinMax.freq.min, phaseFreqMinMax.freq.max),
-        gfreq: clamp(gfreq, phaseFreqMinMax.freq.min, phaseFreqMinMax.freq.max),
-        bfreq: clamp(gfreq, phaseFreqMinMax.freq.min, phaseFreqMinMax.freq.max),
+        fractal: Utils.clamp(fractal, 0, fractalMethods.length-1),
+        iters: Utils.clamp(iters, 1, Infinity), 
+        zoom: Utils.clamp(zoom, 0.001, Infinity),
+        rphase: Utils.clamp(rphase, phaseFreqMinMax.phase.min, phaseFreqMinMax.phase.max),
+        gphase: Utils.clamp(bphase, phaseFreqMinMax.phase.min, phaseFreqMinMax.phase.max),
+        bphase: Utils.clamp(gphase, phaseFreqMinMax.phase.min, phaseFreqMinMax.phase.max),
+        rfreq: Utils.clamp(rfreq, phaseFreqMinMax.freq.min, phaseFreqMinMax.freq.max),
+        gfreq: Utils.clamp(gfreq, phaseFreqMinMax.freq.min, phaseFreqMinMax.freq.max),
+        bfreq: Utils.clamp(gfreq, phaseFreqMinMax.freq.min, phaseFreqMinMax.freq.max),
       }
     }
 
@@ -291,7 +288,7 @@ window.addEventListener('load', function() {
     }
   
     static goToElement(i) {
-      poiArrPos = cyclicClamp(poiArrPos+i, 0, poiArray.length-1);
+      poiArrPos = Utils.cyclicClamp(poiArrPos+i, 0, poiArray.length-1);
       POI.loadArrayElem(poiArrPos);
       Draw.fLoading();
     }
@@ -306,7 +303,7 @@ window.addEventListener('load', function() {
 
     static inRendering = false;
     static interpolate = false;
-    static workerSize = 5;
+    static workerSize = 4;
 
     static workers = [];
 
@@ -355,15 +352,16 @@ window.addEventListener('load', function() {
       }
     }
 
-    static async fractalInterpol(newConfig, frames = 15) {
+    static async fractalInterpol(newConfig, frames = 30, cycleSize = 1) {
       const frameCache = new Queue();
       let interConfig = {};
       Object.assign(interConfig, oldConfig);
+      let modCycle = 0;
       for (let i = 0; i < frames; i++) {
         for (const key in interConfig) {
           let value;
           const a = oldConfig[key],
-                b = newConfig[key];
+          b = newConfig[key];
           if (false/* key == "zoom" */) {
             value = a * Math.pow(b/a, i/frames);
           } else {
@@ -371,18 +369,24 @@ window.addEventListener('load', function() {
             value = b + (diff/2) + (diff/2) *
             Math.cos(Math.PI * (i/frames));
           }
-
+          
           interConfig[key] = value;
         }
         frameCache.pushBack(
           await Fractal.calcWorkerFrame(interConfig));
-      }
-      for (const elem of frameCache) {
-        Draw.fractalQueue.pushBack(elem);
+        
+        if (modCycle == cycleSize) {
+          while (!frameCache.isEmpty) {
+            Draw.fractalQueue.pushBack(frameCache.popFront());
+          }
+          window.requestAnimationFrame(Draw.base);
+        }
+        modCycle %= cycleSize;
+        modCycle++;
       }
       Draw.fractalQueue.pushBack(await Fractal.calcWorkerFrame(newConfig));
-      Fractal.setRendering(false);
       window.requestAnimationFrame(Draw.base);
+      Fractal.setRendering(false);
     }
 
     static calcWorkerFrame(curConfig) {
@@ -478,12 +482,6 @@ window.addEventListener('load', function() {
     window.requestAnimationFrame(Draw.overlay);
   });
 
-  Input.fieldElems.forEach(elem => {
-    elem.addEventListener("change", () => {
-      elem.setAttribute("title", elem.value);
-    });
-  });
-
   Fractal.renderEvts.addEventListener("start", () => {
     overlay.classList.toggle("waiting-cursor");
   });
@@ -492,19 +490,38 @@ window.addEventListener('load', function() {
     overlay.classList.toggle("waiting-cursor");
   });
 
-  document.querySelector("#poi-list").addEventListener("change", POI.getFile);
-  document.querySelector("#add-poi").addEventListener("click", POI.addElemFromConfig);
-  document.querySelector("#clear-pois").addEventListener("click", POI.clearArray);
-  document.querySelector("#download-pois").addEventListener("click", POI.saveFile);
-  document.querySelector("#prev-poi").addEventListener("click", () => POI.goToElement(-1));
-  document.querySelector("#next-poi").addEventListener("click", () => POI.goToElement(1));
-
-  document.querySelector("#interpolate-frames").addEventListener("change", e => {
-    Fractal.interpolate = e.target.checked;
+  Input.fieldElems.forEach(elem => {
+    elem.addEventListener("change", () => {
+      elem.setAttribute("title", elem.value);
+    });
   });
 
-  document.querySelector("#changes-btn").addEventListener("click", Input.insertInputs);
-  document.querySelector("#default-btn").addEventListener("click", Input.setToDefault);
+  // TODO: Put these element query selections as static members of the Input class.
+
+  document.querySelector("#poi-list")
+      .addEventListener("change", POI.getFile);
+  document.querySelector("#add-poi")
+      .addEventListener("click", POI.addElemFromConfig);
+  document.querySelector("#clear-pois")
+      .addEventListener("click", POI.clearArray);
+  document.querySelector("#download-pois")
+      .addEventListener("click", POI.saveFile);
+  document.querySelector("#prev-poi")
+      .addEventListener("click", () => POI.goToElement(-1));
+  document.querySelector("#next-poi")
+      .addEventListener("click", () => POI.goToElement(1));
+
+  document.querySelector("#interpolate-frames")
+    .addEventListener("change", e => {
+      Fractal.interpolate = e.target.checked;
+  });
+
+  document.querySelector("#interpolate-frames").checked = false;
+
+  document.querySelector("#changes-btn")
+      .addEventListener("click", Input.insertInputs);
+  document.querySelector("#default-btn")
+      .addEventListener("click", Input.setToDefault);
 
   window.addEventListener('keyup', k => {
     k.preventDefault();
@@ -551,11 +568,10 @@ window.addEventListener('load', function() {
     let canvasURL = base.toDataURL('image/png');
     a.href =  canvasURL;
     a.style.display = "none";
-    a.download = "fractal-img-" + downloads;
+    a.download = "fractal-save";
     a.click();
     (URL ?? webkitURL).revokeObjectURL(canvasURL);
     a.remove();
-    downloads++;
   });
 
   for (let i = 0; i < Fractal.workerSize; i++) {
