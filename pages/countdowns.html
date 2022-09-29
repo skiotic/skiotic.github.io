@@ -268,7 +268,10 @@
             <label>Name: </label><input id="main-label-input"></input>
             <button id="input-exit-btn" style="color: black; float: right;">x</button>
           </span>
-          <span style="text-align: left; margin-bottom: 25px;"><label>Insert unix timestamp (in seconds) here: </label><input id="time-add"></input></span>
+          <span style="text-align: left; margin-bottom: 25px;">
+            <label>Countdown date: </label>
+            <input type="datetime-local" id="time-add" />
+          </span>
           <span style="text-align: left; margin-bottom: 25px;">
             <label>Time units: </label>
             <select id="unit-selection">
@@ -297,10 +300,9 @@
 
           exitBtn.addEventListener('click', () => {clearInput(); countdownCont.style.display = 'block';});
           countdownConfirm.addEventListener('click', () => {
-            const timestamp = parseInt(timeInput.value);
+            const timestamp = Math.trunc(new Date(timeInput.value).getTime() / 1000);
             if (isNaN(timestamp)) return;
             const unitSelectIndex = commonLabelsEnum[unitSelection.value] ?? 3;
-
             const timeLabelArr = commonLabelsObjects[unitSelectIndex];
 
             const countdownObj = {
