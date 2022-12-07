@@ -8,8 +8,7 @@ class FractalGen {
   static map = [
     FractalGen.mandelbrot,
     FractalGen.burningShip,
-    //FractalGen.novaFractal,
-    //FractalGen.magnetFractal,
+    FractalGen.tricornFractal,
   ];
 
   static mandelbrot(cx, cy, iter) {
@@ -58,32 +57,19 @@ class FractalGen {
     };
   }
 
-  static novaFractal(cx, cy, iter) {
+  static tricornFractal(cx, cy, iter) {
     const limit = 1e6;
     const limit2 = limit*limit;
     let x = cx, y = cy;
     let i;
     let length2;
     for (i = 0; i <= iter; i++) {
-      // TODO: Create algorithm for the Nova Fractal.
-      length2 = x2 + y2;
-      if (length2 > limit2) break;
-    }
-    return {
-      length: length2,
-      amount: i,
-      limit: limit2
-    };
-  }
+      let xtemp = x;
+      let x2 = x*x;
+      let y2 = y*y;
+      x = x2 - y2 + cx;
+      y = -2*(xtemp*y) + cy;
 
-  static magnetFractal(cx, cy, iter) {
-    const limit = 1e6;
-    const limit2 = limit*limit;
-    let x = cx, y = cy;
-    let i;
-    let length2;
-    for (i = 0; i <= iter; i++) {
-      // TODO: Create algorithm for the Magnet Fractal.
       length2 = x2 + y2;
       if (length2 > limit2) break;
     }

@@ -49,8 +49,7 @@ window.addEventListener('load', function() {
   const fractalEnums = Object.freeze({
     MANDELBROT: 0,
     BURNING_SHIP: 1,
-    //NOVA: 2,
-    //MAGNET: 3,
+    TRICORN: 2,
   });
 
   var mouseX = 0, mouseY = 0;
