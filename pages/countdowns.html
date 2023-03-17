@@ -7,6 +7,7 @@
     <meta name="description" content="Keep a list of countdowns here">
     <meta name="keywords" content="skiotic">
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <script type="text/javascript" src="../scripts/async-idb.js"></script>
     <script type="text/javascript" src="../scripts/script.js"></script>
     <link rel="stylesheet" type="text/css" href="../styles/main-style.css">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,12 +15,14 @@
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@1,400;1,700&display=swap">
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap">
     <script type="text/javascript">
+      // TODO: Support making custom units in the UI.
       window.addEventListener("load", () => {
+        const supportsIDB = !!window.indexedDB;
         const countdowns = [];
 
         function makeEnum(...props) {
           const e = {};
-          for (let i = 0; i < props.length; i++) {
+          for (let i = 0; i < props.length; ++i) {
             e[e[props[i]] = i] = props[i];
           }
           return e;
@@ -60,13 +63,14 @@
         ];
 
         class CountdownUtil {
-          constructor(timestampSecs, timeLabels) {
+          constructor(countdownObj, unitsArr = null) {
             Object.defineProperty(this, 'T_COUNTDOWN', {
               enumerable: false,
               writable: false,
-              value: Math.trunc(timestampSecs)
+              value: Math.trunc(countdownObj.timestamp)
             });
-            this.timeLabels = timeLabels;
+            this.timeLabels = unitsArr ?? countdownObj.labels;
+            this.data = countdownObj;
           }
 
           curRelativeTimeInSecs() {
@@ -118,6 +122,17 @@
           return str;
         }
 
+        function getCountdownsIDB() {}
+        function setCountdownsIDB() {}
+        function localStorageToIDB() {}
+
+        // TODO: Add flag in new localStorage version to know its not old format.
+        function isOldFmt() {}
+        function oldObjFmtToNew(obj) {
+          //
+          return obj;
+        }
+
         function getCountdowns() {
           const countdownValue = localStorage.getItem('countdowns');
           if (countdownValue === null || countdownValue === '') return;
@@ -156,12 +171,9 @@
                 countdownObj.labels.push(resultObj);
               }
             }
-            countdownObj.countdownInstance = new CountdownUtil(
-              countdownObj.timestamp,
-              (labelsArr ?? countdownObj.labels)
-            );
             countdownObj.label = sanitize(countdownObj.label);
-            countdowns.push(countdownObj);
+            const countdownUtil = new CountdownUtil(countdownObj, labelsArr);
+            countdowns.push(countdownUtil);
           }
           return countdowns;
         }
@@ -174,9 +186,19 @@
               label: string | string[],
               radix: number,
             }[] | string
-            countdownInstance: CountdownUtil
           }[]
         */
+        /* WIP Serialization format:
+          countdowns: {
+            label: string,
+            timestamp: number,
+            units: {
+              label: { s: string, p: string | null },
+              radix: number,
+            }[] | number
+          }[]
+        */
+        // TODO: Convert this to using IndexedDB, with localStorage functions as a fallback.
         function saveCountdowns() {
           if (countdowns.length === 0) {
             localStorage.setItem('countdowns', '');
@@ -184,25 +206,25 @@
           };
           const keyArr = [];
           for (const countdown of countdowns) {
-            const mainLabel = countdown.label;
+            const mainLabel = countdown.data.label;
             let labelObjInfo = null;
-            if (Array.isArray(countdown.labels)) {
+            if (Array.isArray(countdown.data.labels)) {
               labelObjInfo = [];
-              for (let i = 0; i < countdown.labels.length; i++) {
-                if (Array.isArray(countdown.labels[i].label)) {
+              for (let i = 0; i < countdown.data.labels.length; i++) {
+                if (Array.isArray(countdown.data.labels[i].label)) {
                   labelObjInfo.push(`~${
-                    countdown.labels[i].label[0]
+                    countdown.data.labels[i].label[0]
                   },${
-                    countdown.labels[i].label[1]
-                  }:${countdown.labels[i].radix}`);
+                    countdown.data.labels[i].label[1]
+                  }:${countdown.data.labels[i].radix}`);
                 } else {
-                  labelObjInfo.push(`${countdown.labels[i].label}:${countdown.labels[i].radix}`);
+                  labelObjInfo.push(`${countdown.data.labels[i].label}:${countdown.data.labels[i].radix}`);
                 }
               }
             } else {
-              labelObjInfo = `<${countdown.labels}>`;
+              labelObjInfo = `<${countdown.data.labels}>`;
             }
-            keyArr.push(`${mainLabel}*${countdown.timestamp}*${labelObjInfo.join?.('|') ?? labelObjInfo}`);
+            keyArr.push(`${mainLabel}*${countdown.data.timestamp}*${labelObjInfo.join?.('|') ?? labelObjInfo}`);
           }
           const keyStr = keyArr.join('%');
           localStorage.setItem('countdowns', keyStr);
@@ -224,8 +246,8 @@
             countdownInterface.style.borderRadius = '3px';
             countdownInterface.style.width = '75%';
             countdownInterface.style.margin = '10px auto';
-            countdownInterface.innerHTML += `<p style="overflow: auto; margin: 10px 0 0 0; font-size: 23px; font-weight: 600;">${countdownObj.label}<button class="delete-counter" style="color: black; float: right;">x</button></p>`;
-            countdownInterface.innerHTML += `<p class="count-formatted">${countdownObj.countdownInstance.getFormattedTime()}</p>`;
+            countdownInterface.innerHTML += `<p style="overflow: auto; margin: 10px 0 0 0; font-size: 23px; font-weight: 600;">${countdownObj.data.label}<button class="delete-counter" style="color: black; float: right;">x</button></p>`;
+            countdownInterface.innerHTML += `<p class="count-formatted">${countdownObj.getFormattedTime()}</p>`;
 
             const deleteBtn = countdownInterface.querySelector('.delete-counter');
             deleteBtn.addEventListener('click', () => {
@@ -251,7 +273,7 @@
             curInterval = setInterval(() => {
               for (let i = 0; i < countdownContChildren.length; i++) {
                 const timeElem = countdownContChildren[i].querySelector('.count-formatted');
-                timeElem.innerHTML = countdowns[i].countdownInstance.getFormattedTime();
+                timeElem.innerHTML = countdowns[i].getFormattedTime();
               }
             }, 1000);
           }
@@ -308,10 +330,11 @@
             const countdownObj = {
               label: sanitize(labelInput.value),
               timestamp: timestamp,
-              labels: commonLabelsEnum[unitSelectIndex], 
-              countdownInstance: new CountdownUtil(timestamp, timeLabelArr)
+              labels: commonLabelsEnum[unitSelectIndex]
             };
-            newCountdown(countdowns.push(countdownObj)-1);
+            const countdownUtil = new CountdownUtil(countdownObj, timeLabelArr);
+
+            newCountdown(countdowns.push(countdownUtil)-1);
             clearInput();
             saveCountdowns();
             newInterval();
