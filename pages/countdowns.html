@@ -320,7 +320,12 @@
             countdownInputElem.style.display = 'none';
           }
 
-          exitBtn.addEventListener('click', () => {clearInput(); countdownCont.style.display = 'block';});
+          exitBtn.addEventListener('click', () => {
+            clearInput();
+            if (countdowns.length > 0) {
+              countdownCont.style.display = 'block';
+            }
+          });
           countdownConfirm.addEventListener('click', () => {
             const timestamp = Math.trunc(new Date(timeInput.value).getTime() / 1000);
             if (isNaN(timestamp)) return;
