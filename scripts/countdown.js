@@ -2,6 +2,14 @@
 window.addEventListener("load", () => {
   let supportsIDB = !!window.indexedDB;
 
+  class CountdownsV1 {
+    // v1 methods go here
+  }
+
+  class CountdownsV2 {
+    // v2 methods go here
+  }
+
   function makeEnum(...props) {
     const e = {};
     for (let i = 0; i < props.length; ++i) {
@@ -106,7 +114,7 @@ window.addEventListener("load", () => {
 
   // TODO: Return array of countdown objects when retrieving instead from now on.
   function getIDBCountdowns() {}
-  function setIDBCountdowns() {}
+  function setIDBCountdowns(countdowns) {}
   function localStorageToIDB() {}
   function saveV2ToLocalStorage() {}
 
@@ -326,7 +334,7 @@ window.addEventListener("load", () => {
 
       newCountdown(countdowns.push(countdownUtil)-1);
       clearInput();
-      saveCountdowns();
+      saveCountdowns(countdowns);
       newInterval();
     });
 
