@@ -1,13 +1,12 @@
+// TODO: Consider a CountdownData class to organize.
 // TODO: Support making custom units in the UI.
 window.addEventListener("load", () => {
-  let supportsIDB = !!window.indexedDB;
+  let supportsIDB = 'indexedDB' in window;
 
-  class CountdownsV1 {
-    // v1 methods go here
-  }
-
-  class CountdownsV2 {
-    // v2 methods go here
+  if (!supportsIDB && !('localStorage' in window)) {
+    return window.alert(
+        `Your browser does not support the storage needed for this app!
+Try upgrading your browser, or checking extensions and settings if browser is up to date.`);
   }
 
   function makeEnum(...props) {
@@ -17,14 +16,14 @@ window.addEventListener("load", () => {
     }
     return e;
   }
-  const commonLabelsEnum = makeEnum(
+  const commonUnitsEnum = makeEnum(
     'S',     // seconds
     'SM',    // seconds, minutes
     'SMH',   // seconds, minutes, hours
     'SMHD',  // seconds, minutes, hours, days
     'SMHDY', // seconds, minutes, hours, days, years
   );
-  const commonLabelsObjects = [
+  const commonUnitsObjects = [
     [
       {"label":"second"}
     ],
@@ -52,14 +51,335 @@ window.addEventListener("load", () => {
     ]
   ];
 
+  /* V1 Object Format
+  countdowns: {
+    label: string,
+    timestamp: number,
+    labels: {
+      label: string | string[],
+      radix: number,
+    }[] | number (parsed from string)
+  }[]
+  */
+
+  /* WIP V2 Object format:
+    countdowns: {
+      id: string, // <dateMsOnStart+countInSession>
+      label: string,
+      timestamp: number,
+      units: {
+        label: { singular: string, plural?: string },
+        radix: number,
+      }[] | number
+    }[]
+  */
+
+  class CountdownsV1 {
+    static getCountdowns() {
+      const countdowns = [];
+      const countdownValue = window.localStorage.getItem('countdowns');
+      if (countdownValue === null || countdownValue === '') {
+        return countdowns;
+      }
+      const countdownValueArr = countdownValue.split('%');
+  
+      for (const key of countdownValueArr) {
+        const [label, timestamp, timeLabelsStr] = key.split('*', 3);
+        const countdownObj = {
+          label: sanitize(label),
+          timestamp: parseInt(timestamp),
+          labels: []
+        };
+  
+        const checkForEnum = timeLabelsStr.match(/^(?:<)([^<>]+)(?:>)$/);
+        if (checkForEnum) {
+          countdownObj.labels = commonUnitsEnum[checkForEnum[1]]; // number
+        } else {
+          for (const objStr of timeLabelsStr.split('|')) {
+            // label:radix|~labelSingular,labelPlural:radix
+            let resultObj = {};
+            if (objStr.startsWith('~')) {
+              const tempObjArr = objStr.slice(1).split(':', 2);
+              const tempLabelArr = tempObjArr[0].split(',', 2);
+              tempLabelArr[0] = sanitize(tempLabelArr[0]);
+              tempLabelArr[1] = sanitize(tempLabelArr[1]);
+  
+              resultObj['label'] = tempLabelArr;
+              resultObj['radix'] = sanitize(tempObjArr[1]);
+            } else {
+              const tempObjArr = objStr.split(':', 2);
+              resultObj['label'] = sanitize(tempObjArr[0]);
+              resultObj['radix'] = sanitize(tempObjArr[1]);
+            }
+            countdownObj.labels.push(resultObj);
+          }
+        }
+        countdowns.push(countdownObj);
+      }
+      return countdowns;
+    }
+
+    static usesV1Fmt() {
+      return window.localStorage.getItem('countdowns') !== null;
+    }
+  }
+
+  class CountdownsV2 {
+    /** @type {IDBDatabase | null} */
+    static db = null;
+    static initDate = Date.now();
+    static curObjCount = 0;
+    static generateId() {
+      return `${CountdownsV2.initDate}+${CountdownsV2.curObjCount}`;
+    }
+
+    static async getCountdowns() {
+      // First, check if there is already an indexed db (if supported (creating it if able to)),
+      // retrieving if there's data. If its the first time, it checks localStorage for data, and
+      // then deletes it after transferring it. If using the database isn't available, it falls
+      // back to using localStorage.
+      if (supportsIDB) {
+        try {
+          let notInit = true;
+          const transferredListener = new EventTarget();
+          const dbInit = db => {
+            CountdownsV2.onDbInit(db);
+            notInit = false;
+          };
+
+          CountdownsV2.db = await AsyncIDB.processOpenDb(
+            window.indexedDB.open('countdowns', 1), dbInit);
+
+          if (notInit) {
+            let countdownsRes = null;
+            await AsyncIDB.processTransaction(
+              CountdownsV2.db.transaction('countdowns'), async trans => {
+                countdownsRes = await AsyncIDB.processRequest(
+                    trans.objectStore('countdowns').getAll());
+            });
+            return countdownsRes;
+          }
+
+          const localStorageCountdowns = CountdownsV2.checkInLocalStorage(transferredListener);
+          if (localStorageCountdowns.length == 0) {
+            return localStorageCountdowns;
+          }
+
+          transferredListener.addEventListener(
+              'success', () => CountdownsV2.deleteLocalStorage(), { once: true });
+          return localStorageCountdowns;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      // If IDB not supported/working...
+      return CountdownsV2.checkInLocalStorage(null, false);
+    }
+
+    static checkInLocalStorage(transferredListener, idbWorking = true) {
+      // Check if there is V2 objects in localStorage
+      if (CountdownsV2.usesLocalStorageV2Fmt()) {
+        const countdowns = CountdownsV2.getLocalStorageCountdowns();
+        if (idbWorking) {
+          CountdownsV2.tryTransferringToIDB(countdowns)
+              .then(_ => transferredListener.dispatchEvent(new Event('success')))
+              .catch(_ => CountdownsV2.fallbackSaveLocalStorage(countdowns));
+        }
+        return countdowns;
+      }
+
+      // Or, check if there is V1 objects in localStorage
+      if (CountdownsV1.usesV1Fmt()) {
+        const countdowns = CountdownsV2.v1ToV2Objects(
+            CountdownsV1.getCountdowns());
+        if (idbWorking) {
+          CountdownsV2.tryTransferringToIDB(countdowns)
+              .then(_ => transferredListener.dispatchEvent(new Event('success')))
+              .catch(_ => CountdownsV2.fallbackSaveLocalStorage(countdowns));
+        }
+        return countdowns;
+      }
+
+      // If down here, this means it doesn't have any countdowns in localStorage.
+      return [];
+    }
+
+    static async tryTransferringToIDB(countdowns) {
+      await AsyncIDB.processTransaction(
+          CountdownsV2.db.transaction('countdowns'), trans => {
+            const objectStore = trans.objectStore('countdowns');
+            for (const countdown of countdowns) {
+              objectStore.add(countdown);
+            }
+      });
+    }
+
+    static async trySavingObjToIDB(countdownObj) {
+      await AsyncIDB.processTransaction(
+          CountdownsV2.db.transaction('countdowns', 'readwrite'), trans => {
+            const objectStore = trans.objectStore('countdowns');
+            objectStore.put(countdownObj);
+      });
+    }
+
+    static async saveCountdown(countdownObj, countdowns) {
+      if (supportsIDB) {
+        try {
+          await CountdownsV2.trySavingObjToIDB(countdownObj);
+          return;
+        } catch {
+          console.error('Issues with saving countdown to indexedDB.\nResorting to localStorage...');
+        }
+      }
+      CountdownsV2.fallbackSaveLocalStorage(countdowns);
+    }
+
+    static async deleteCountdown(id, countdowns) {
+      if (supportsIDB) {
+        try {
+          await AsyncIDB.processTransaction(
+              CountdownsV2.db.transaction('countdowns', 'readwrite'), trans => {
+                trans.objectStore('countdowns').delete(id);
+          });
+          return;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      CountdownsV2.fallbackSaveLocalStorage(countdowns);
+    }
+
+    static getLocalStorageCountdowns() {
+      const countdowns = [];
+      const countdownValue = window.localStorage.getItem('countdowns:v2');
+      const countdownValueArr = countdownValue.split('%');
+
+      for (const key of countdownValueArr) {
+        const [id, label, timestamp, unitsStr] = key.split('*', 5);
+        const newCountdownObj = {
+          id, label,
+          timestamp: parseInt(timestamp),
+          units: [],
+        }
+
+        const checkForEnum = unitsStr.match(/^(?:<)([^<>]+)(?:>)$/);
+        if (checkForEnum) {
+          newCountdownObj.units = parseInt(checkForEnum[1]);
+        } else {
+          for (const objStr of unitsStr.split('|')) {
+            // label:radix|~labelSingular,labelPlural:radix
+            let resultObj = {};
+            if (objStr.startsWith('~')) {
+              const [ labels, radix ] = objStr.slice(1).split(':', 2);
+              const [ singular, plural ] = labels.split(',', 2);
+              const unitLabelObj = {
+                singular: sanitize(singular), 
+                plural: sanitize(plural),
+              };
+  
+              resultObj['label'] = unitLabelObj;
+              resultObj['radix'] = sanitize(radix);
+            } else {
+              const [ label, radix ] = objStr.split(':', 2);
+              resultObj['label'] = {
+                singular: sanitize(label),
+              };
+              resultObj['radix'] = sanitize(radix);
+            }
+            newCountdownObj.units.push(resultObj);
+          }
+        }
+        countdowns.push(newCountdownObj);
+      }
+      return countdowns;
+    }
+
+    /** @param {CountdownUtil[] | {id:number,label:string,timestamp:string,units:{label:{singular:string,plural?:string}}[]|number}[]} countdowns */
+    static fallbackSaveLocalStorage(countdowns) {
+      if (countdowns.length === 0) {
+        window.localStorage.setItem('countdowns:v2', '');
+        return;
+      };
+      const countdownStrArr = [];
+      for (let countdown of countdowns) {
+        if (countdown instanceof CountdownUtil) {
+          countdown = countdown.data;
+        }
+
+        let unitStrOrArr;
+        if (typeof countdown.units == 'number') {
+          unitStrOrArr = `<${countdown.units}>`;
+        } else {
+          unitStrOrArr = [];
+          for (const unit of countdown.units) {
+            if (unit.label.plural) {
+              unitStrOrArr.push(`~${unit.label.singular},${unit.label.plural}:${unit.radix}`);
+            } else {
+              unitStrOrArr.push(`${unit.label.singular}:${unit.radix}`);
+            }
+          }
+        }
+        countdownStrArr.push(`${countdown.id}*${countdown.label}*${countdown.timestamp}*${
+            unitStrOrArr.join?.('|') ?? unitStrOrArr}`);
+      }
+      const countdownStr = countdownStrArr.join('%');
+      window.localStorage.setItem('countdowns:v2', countdownStr);
+      //id*countdownName*timestamp*label:radix|~labelSingular,labelPlural:radix%id*countdownName*timestamp*<number[enum]>
+      return countdownStr;
+    }
+
+    static deleteLocalStorage() {
+      if (CountdownsV1.usesV1Fmt()) {
+        return window.localStorage.removeItem('countdowns');
+      }
+      if (CountdownsV2.usesLocalStorageV2Fmt()) {
+        return window.localStorage.removeItem('countdowns:v2');
+      }
+    }
+
+    static usesLocalStorageV2Fmt() {
+      return window.localStorage.getItem('countdowns:v2') !== null;
+    }
+
+    static v1ToV2Objects(v1Countdowns) {
+      for (let countdown of v1Countdowns) {
+        countdown.id = CountdownsV2.generateId();
+        countdown.units = countdown.labels;
+        delete countdown.labels;
+        if (typeof countdown.units == 'string') {
+          countdown.units = commonUnitsEnum[countdown.units];
+        }
+        const units = countdown.units;
+        units.label = typeof units.label == 'string'
+            ? { singular: units.label }
+            : { singular: units.label[0], plural: units.label[1] };
+      }
+      return v1Countdowns;
+    }
+
+    /**
+     * @param {IDBDatabase} db 
+     */
+    static onDbInit(db) {
+      const objectStore = db.createObjectStore(
+          'countdowns', { keyPath: 'id' });
+
+      objectStore.createIndex('label', 'label', { unique: false });
+      objectStore.createIndex('timestamp', 'timestamp', { unique: false });
+      objectStore.createIndex('units', 'units', { unique: false });
+    }
+  }
+
+
   class CountdownUtil {
-    constructor(countdownObj, templateUnitsArr = null) {
+    /** @param {{ id: number, timestamp: string, units: { label: { singular: string, plural?: string }, radix: number, }[] | number}} countdownObj */
+    constructor(countdownObj) {
       Object.defineProperty(this, 'T_COUNTDOWN', {
         enumerable: false,
         writable: false,
         value: Math.trunc(countdownObj.timestamp)
       });
-      this.timeLabels = templateUnitsArr ?? countdownObj.labels;
       this.data = countdownObj;
     }
 
@@ -76,25 +396,29 @@ window.addEventListener("load", () => {
           ? (isArray ? obj.label[1] : 's')
           : (isArray ? obj.label[0] : '');
       }
+      const units = typeof this.data.units == 'number'
+          ? commonUnitsObjects[this.data.units]
+          : this.data.units;
+
       const timeFormat = (num) => {
         if (num < 0) {
           isPast = true;
           num = -num;
         }
-        const digits = new Array(this.timeLabels.length-1);
+        const digits = new Array(units.length-1);
         for (let i = 0; i < digits.length; ++i) {
-          digits[i] = (num % this.timeLabels[i].radix);
-          num = Math.floor(num / this.timeLabels[i].radix);
+          digits[i] = (num % units[i].radix);
+          num = Math.floor(num / units[i].radix);
         }
         digits.push(num);
         return digits;
       }
       const f = timeFormat(t);
       let finalStr = '';
-      for (let i = this.timeLabels.length-1; i >= 0; i--) {
-        let timeLabel = this.timeLabels[i].label;
+      for (let i = units.length-1; i >= 0; i--) {
+        let timeLabel = units[i].label;
         timeLabel = Array.isArray(timeLabel) ? '' : timeLabel;
-        const p = plur(f[i], this.timeLabels[i]);
+        const p = plur(f[i], units[i]);
         finalStr += `<span style="text-align: center">${f[i]} ${timeLabel + p} ${i == 0 && isPast ? 'ago' : ''}</span>`;
       }
       return finalStr;
@@ -112,89 +436,11 @@ window.addEventListener("load", () => {
     return str;
   }
 
-  // TODO: Return array of countdown objects when retrieving instead from now on.
-  function getIDBCountdowns() {}
-  function setIDBCountdowns(countdowns) {}
-  function localStorageToIDB() {}
-  function saveV2ToLocalStorage() {}
+  function getV1Countdowns() { return []; } // Depreciated
 
-  // TODO: Add flag in new localStorage version to know its not old format.
-  function isV1Fmt() {}
-  function v1ObjFmtToV2(obj) {
-    //
-    return obj;
-  }
-
-  function getV1Countdowns() {
-    const countdownValue = localStorage.getItem('countdowns');
-    if (countdownValue === null || countdownValue === '') return;
-    const countdowns = [];
-    const countdownValueArr = countdownValue.split('%');
-
-    for (const key of countdownValueArr) {
-      const [label, timestamp, timeLabelsStr] = key.split('*', 3);
-      const countdownObj = {
-        label: label,
-        timestamp: parseInt(timestamp),
-        labels: []
-      };
-
-      const checkForEnum = timeLabelsStr.match(/^(?:<)([^<>]+)(?:>)$/);
-      let labelsArr = null;
-      if (checkForEnum) {
-        countdownObj.labels = checkForEnum[1];
-        labelsArr = commonLabelsObjects[commonLabelsEnum[countdownObj.labels]];
-      } else {
-        for (const objStr of timeLabelsStr.split('|')) {
-          // label:radix|~labelSingular,labelPlural:radix
-          let resultObj = {};
-          if (objStr.startsWith('~')) {
-            const tempObjArr = objStr.slice(1).split(':', 2);
-            const tempLabelArr = tempObjArr[0].split(',', 2);
-            tempLabelArr[0] = sanitize(tempLabelArr[0]);
-            tempLabelArr[1] = sanitize(tempLabelArr[1]);
-
-            resultObj['label'] = tempLabelArr;
-            resultObj['radix'] = sanitize(tempObjArr[1]);
-          } else {
-            const tempObjArr = objStr.split(':', 2);
-            resultObj['label'] = sanitize(tempObjArr[0]);
-            resultObj['radix'] = sanitize(tempObjArr[1]);
-          }
-          countdownObj.labels.push(resultObj);
-        }
-      }
-      countdownObj.label = sanitize(countdownObj.label);
-      const countdownUtil = new CountdownUtil(countdownObj, labelsArr);
-      countdowns.push(countdownUtil);
-    }
-    return countdowns;
-  }
-
-  /*
-    countdowns: {
-      label: string,
-      timestamp: number,
-      labels: {
-        label: string | string[],
-        radix: number,
-      }[] | string
-    }[]
-  */
-  /* WIP Serialization format:
-    countdowns: {
-      label: string,
-      timestamp: number,
-      units: {
-        label: { s: string, p: string | null },
-        radix: number,
-      }[] | number
-    }[]
-  */
-  // TODO: Convert this to using IndexedDB, with localStorage functions as a fallback.
-  function saveCountdowns(countdowns) {
+  function saveV1Countdowns(countdowns) { // Depreciated, repurpose code for CountdownsV2.fallbackSaveLocalStorage.
     if (countdowns.length === 0) {
-      localStorage.setItem('countdowns', '');
+      window.localStorage.setItem('countdowns', '');
       return;
     };
     const keyArr = [];
@@ -220,13 +466,30 @@ window.addEventListener("load", () => {
       keyArr.push(`${mainLabel}*${countdown.data.timestamp}*${labelObjInfo.join?.('|') ?? labelObjInfo}`);
     }
     const keyStr = keyArr.join('%');
-    localStorage.setItem('countdowns', keyStr);
+    window.localStorage.setItem('countdowns', keyStr);
     //countdownName*timestamp*label:radix|~labelSingular,labelPlural:radix%countdownName*timestamp*<ENUM>
     return keyStr;
   }
 
-  function main() {
-    const countdowns = getV1Countdowns() ?? [];
+  function wrapObjsInUtils(countdowns) {
+    for (let i = 0; i < countdowns.length; ++i) {
+      countdowns[i] = new CountdownUtil(countdowns[i]);
+    }
+    return countdowns;
+  }
+
+  async function main() {
+    const countdowns = wrapObjsInUtils((await CountdownsV2.getCountdowns())
+        .sort((first, second) => {
+          const [ aDateStr, aCountStr ] = first.id.split('+', 1);
+          const [ bDateStr, bCountStr ] = second.id.split('+', 1);
+          const aDate = parseInt(aDateStr),
+                bDate = parseInt(bDateStr);
+          if (aDate == bDate) {
+            return parseInt(aCountStr) - parseInt(bCountStr);
+          }
+          return aDate - bDate;
+    }));
     let curInterval = null;
     const addCountdownBtn = document.querySelector('#add-countdown');
     const countdownCont = document.querySelector('#countdown-cont');
@@ -248,8 +511,8 @@ window.addEventListener("load", () => {
         if (!willDelete) return;
 
         countdownCont.removeChild(countdownInterface);
+        CountdownsV2.deleteCountdown(countdowns[index].data.id, countdowns);
         countdowns.splice(index, 1);
-        saveCountdowns(countdowns);
         newInterval();
       });
       countdownCont.appendChild(countdownInterface);
@@ -322,19 +585,19 @@ window.addEventListener("load", () => {
     countdownConfirm.addEventListener('click', () => {
       const timestamp = Math.trunc(new Date(timeInput.value).getTime() / 1000);
       if (isNaN(timestamp)) return;
-      const unitSelectIndex = commonLabelsEnum[unitSelection.value] ?? 3;
-      const timeLabelArr = commonLabelsObjects[unitSelectIndex];
+      const unitSelectIndex = commonUnitsEnum[unitSelection.value] ?? 3;
 
       const countdownObj = {
-        label: sanitize(labelInput.value),
-        timestamp: timestamp,
-        labels: commonLabelsEnum[unitSelectIndex]
+        id: CountdownsV2.generateId(),
+        label: sanitize(labelInput.value), timestamp,
+        units: unitSelectIndex,
       };
-      const countdownUtil = new CountdownUtil(countdownObj, timeLabelArr);
+      const countdownUtil = new CountdownUtil(countdownObj);
 
       newCountdown(countdowns.push(countdownUtil)-1);
       clearInput();
-      saveCountdowns(countdowns);
+      CountdownsV2.saveCountdown(countdownUtil.data, countdowns)
+          .catch(err => console.error(err));
       newInterval();
     });
 
@@ -348,5 +611,5 @@ window.addEventListener("load", () => {
     addCountdownBtn.addEventListener('click', showCountdownInput);
     if (countdowns.length > 0) newInterval();
   }
-  main();
+  main().catch(err => console.error(err));
 });

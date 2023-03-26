@@ -1,17 +1,25 @@
+class IDBAbortError extends Error {
+  constructor(message = null) { super(message); }
+}
+
 class AsyncIDB {
   /**
    * Converting an open request to async/await.
    * @param {IDBOpenDBRequest} openDbReq 
-   * @param {{ upgradeNeededCb: (db: IDBDatabase) => void }} param1 
+   * @param {(db: IDBDatabase) => void | Promise<void>} upgradeNeededCb 
    * @returns {Promise<IDBDatabase>}
    */
-  static openDbFrom(openDbReq, { upgradeNeededCb = null }) {
+  static processOpenDb(openDbReq, upgradeNeededCb = null) {
     return new Promise((resolve, reject) => {
       openDbReq.onsuccess = _ => resolve(openDbReq.result);
-      openDbReq.onerror = reject;
-      openDbReq.onupgradeneeded = _ => {
+      openDbReq.onerror = _ => reject(new Error('OpenDBRequest failed'));
+      openDbReq.onupgradeneeded = async _ => {
         if (upgradeNeededCb) {
-          upgradeNeededCb(openDbReq.result);
+          if (upgradeNeededCb instanceof Promise) {
+            await upgradeNeededCb(openDbReq.result);
+          } else {
+            upgradeNeededCb(openDbReq.result);
+          }
         }
         resolve(openDbReq.result);
       }
@@ -22,25 +30,29 @@ class AsyncIDB {
    * Converting a normal request to async/await.
    * @param {IDBRequest} request
    */
-  static requestFrom(request) {
+  static processRequest(request) {
     return new Promise((resolve, reject) => {
       request.onsuccess = _ => resolve(request.result);
-      request.onerror = reject;
+      request.onerror = _ => reject(new Error('Request failed'));
     });
   }
 
   /**
    * Makes calls to a transaction async/awaitable.
    * @param {IDBTransaction} transaction 
-   * @param {(transaction: IDBTransaction) => void} callback 
-   * @returns {Pronise<null>}
+   * @param {(transaction: IDBTransaction) => void | Promise<void>} callback 
+   * @returns {Promise<void>}
    */
   static processTransaction(transaction, callback) {
-    return new Promise((resolve, reject) => {
-      transaction.oncomplete = _ => resolve(null);
-      transaction.onerror = reject;
-      transaction.onabort = reject;
-      callback(transaction);
+    return new Promise(async (resolve, reject) => {
+      transaction.oncomplete = _ => resolve();
+      transaction.onerror = _ => reject(new Error('Transaction failed'));
+      transaction.onabort = _ => reject(new IDBAbortError('Transaction aborted'));
+      if (callback instanceof Promise) {
+        await callback(transaction);
+      } else {
+        callback(transaction);
+      }
     });
   }
 }
