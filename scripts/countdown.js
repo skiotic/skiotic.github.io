@@ -351,7 +351,7 @@ Try upgrading your browser, or checking extensions and settings if browser is up
           countdown.units = commonUnitsEnum[countdown.units];
         }
         const units = countdown.units;
-        units.label = typeof units.label == 'string'
+        units.label = typeof units.label == 'number'
             ? { singular: units.label }
             : { singular: units.label[0], plural: units.label[1] };
       }
