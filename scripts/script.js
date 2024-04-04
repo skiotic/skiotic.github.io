@@ -3,7 +3,7 @@ window.addEventListener('load', function() {
   (() => {
     let json;
     const req = new XMLHttpRequest();
-    req.open("GET", "https://skiotic.github.io/scripts/data.json", true);
+    req.open("GET", "/scripts/data.json", true);
     req.onreadystatechange = () => {
       if (req.readyState === XMLHttpRequest.DONE) {
         if (req.status === 0 || (req.status >= 200 && req.status < 400)) {
@@ -20,7 +20,7 @@ window.addEventListener('load', function() {
 
   const homeBtn = document.querySelector("#home-btn");
   
-  homeBtn.addEventListener('click', () => window.location.assign("https://skiotic.github.io"));
+  homeBtn.addEventListener('click', () => window.location.assign("/"));
 
   let isIndexPage = function() {
     return window.location.pathname === "/" || window.location.pathname.endsWith("skiotic.github.io\/index.html");
